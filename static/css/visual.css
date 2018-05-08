@@ -1,0 +1,44 @@
+.geopath {
+    fill: slategrey;
+    stroke: black;
+    stroke-width: 0.5px;
+}
+
+.latlon {
+    fill: none;
+    stroke: black;
+    stroke-opacity: 0.3;
+    stroke-width: 0.3px;
+}
+
+.axis path,
+.axis line {
+    fill: none;
+    stroke: black;
+    shape-rendering: crispEdges;
+}
+
+.axis text {
+    font-family: sans-serif;
+    font-size: 1em;
+    text-shadow: 0 1px 0 #fff;
+}
+
+.background path {
+    fill: none;
+    stroke: #ccc;
+    stroke-opacity: .4;
+    shape-rendering: crispEdges;
+}
+
+.foreground path {
+    fill: none;
+    stroke: steelblue;
+    stroke-opacity: .7;
+}
+
+.brush .extent {
+    fill-opacity: .3;
+    stroke: #fff;
+    shape-rendering: crispEdges;
+}
