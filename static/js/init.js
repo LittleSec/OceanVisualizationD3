@@ -55,19 +55,12 @@ $("div.heatmap").height(
 );
 // 设置热力图容器内所有子元素的高度一致
 $("div.heatmap").children().height(leftColTopRowHight);
-// 消除左padding使得更紧凑
+// 消除colorbar的左padding使得更紧凑
 $("div.heatmap").children("#colorbar, #dateselector").css("padding-left", "0")
 
-// 右列每个散点图的大小一样
-$(".graphs-group .one-graph").css("padding-left", 0).css("padding-right", 0).height(
-    function () {
-        return $(this).width();
-    }
-);
 
 // 左列上行高度统一
 $("div.leftcol-toprow").height(leftColTopRowHight);
-
 // 左列下行高宽1:2.5
 $("#parallel-coordinate").height(
     function(){
@@ -87,6 +80,14 @@ $(".first-row-right").height(
     function(){
         return $(".first-row-left").height() - parseFloat($(".keen-dashboard .chart-wrapper").css("margin-bottom"));
         // 在css里，$(".keen-dashboard .chart-wrapper").css("margin-bottom")为10px
+    }
+);
+
+// 重新设置右列两行的高度
+// 散点图的大小一样
+$(".first-row-right").children().height(
+    function () {
+        return $(this).width();
     }
 );
 
