@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<head>
+    <title>
+        平行坐标图
+    </title>
+</head>
+<style>
+    svg {
+        font: 10px sans-serif;
+    }
+
+    .background path {
+        fill: none;
+        stroke: #ccc;
+        stroke-opacity: .4;
+        shape-rendering: crispEdges;
+    }
+
+    .foreground path {
+        fill: none;
+        stroke: steelblue;
+        stroke-opacity: .7;
+    }
+
+    .brush .extent {
+        fill-opacity: .3;
+        stroke: #fff;
+        shape-rendering: crispEdges;
+    }
+
+    .axis line,
+    .axis path {
+        fill: none;
+        stroke: #000;
+        shape-rendering: crispEdges;
+    }
+
+    .axis text {
+        text-shadow: 0 1px 0 #fff;
+    }
+</style>
+
+<body>
+    <h1><a href="https://bl.ocks.org/mbostock/1558011">平行坐标图，作者：Mike Bostock’s Block</a></h1>
+    <p><a href="http://github.com/LittleSec">注释by：何杰煊</a></p>
+    <p>改写部分代码使之更容易理解</p>
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script>
+        // svg宽960，高500
+        // m相当于padding=[top,right,bottom,left]
+        var m = [30, 10, 10, 10],
+            w = 960 - m[1] - m[3], //g的宽
+            h = 500 - m[0] - m[2];
+
+        // x是序数比例尺（定义域和值域都是离散的）
+        // 先设定了值域，值域的范围是[0, w]（根据定义域会自动拆分）
+        // 而padding0.5的意思是区间两边一共留0.5个step出来，这里举个例子
+        // 以domain([1,2,3,4,5]), range([0,100])为例，如果是默认padding为0的话，range就是[0,25,50,75,100]，step为25
+        // 此时加上一个padding为1，则range就是[10,30,50,70,90]，要注意的逻辑是，此时step是20，两边一共留下的空白也是10+10=20，
+        // 也就是说，这个padding的单位是step
+        // 这个序数比例尺实际上指示的是每个坐标的x位置
+        var x = d3.scale.ordinal().rangePoints([0, w], .5),
+            y = {}; // 下面的代码可以看出，里面的key是各属性的名称，而value是对应属性的线性比例尺！
+
+        var line = d3.svg.line(), //线段生成器
+            axis = d3.svg.axis().orient("left"), //坐标轴，刻度在左侧
+            background,
+            foreground;
+
+        //这里正常添加svg和g并得到选择集，注意，这个svg实际上是g
+        var svg = d3.select("body").append("svg")
+            .attr("width", w + m[1] + m[3])
+            .attr("height", h + m[0] + m[2])
+            .append("g")
+            .attr("transform", "translate(" + m[3] + "," + m[0] + ")");
+
+        var dimensions; //各个维度
+
+        d3.csv("./b.csv", function (error, cities) {
+            if (error) throw error;
+
+            // Extract the list of dimensions and create a scale for each.
+            // cities[0]就是第一行，也就是各列的名字
+            // d3.keys(object)是返回这个object的属性，组成一个数组。
+            // dimensions就是个变量，这里实际上是先复制给dimensions，然后把dimesions作为参数输入x.domain而已。orz
+            console.log(cities); //cities实际上是一个数组啊
+            dimensions = d3.keys(cities[0]).filter(function (d) {
+                return d != 'City';
+            });
+            // console.log(typeof(dimensions)); //竟然是个object!!
+            x.domain(dimensions);
+            for (var i=0; i<dimensions.length; i++) {
+                y[dimensions[i]] = d3.scale.linear()
+                    .domain(d3.extent(cities, function (p) {
+                        return +p[dimensions[i]];
+                    }))
+                    .range([h, 0]);
+            }
+            /*
+            x.domain(dimensions = d3.keys(cities[0]).filter(function (d) {
+                // y是上面定义的字典，这里可以看出key是各属性的名称，而value是对应属性的线性比例尺
+                return d != "City" && (y[d] = d3.scale.linear()
+                    .domain(d3.extent(cities, function (p) {
+                        //d3.extent()返回数组的最大最小值
+                        return +p[d];
+                        //d是各属性名
+                        //p是csv文件读出来的数据
+                        //p[d]某一列的所有值，+是约等于强制转换为数字
+                    }))
+                    .range([h, 0])); //值域，大的值在高处，小的值在低处
+                // 综上，就是生成各个属性的线性比例尺而已
+            }));
+            // 综上，这是在设定每个属性的线性比例尺，只不过嵌套的形式进行，外壳是在设置序数比例尺的定义域
+            */
+
+            // Add grey background lines for context.
+            // 看到两个ground，对应是选中（蓝色，fore）和没选中（灰色，默认，真正的background）的区别
+            // 绑定的是整个csv数据
+            background = svg.append("g")
+                .attr("class", "background")
+                .selectAll("path")
+                .data(cities)
+                .enter().append("path")
+                .attr("d", path);
+
+            // 被选中的ground，蓝色的
+            // Add blue foreground lines for focus.
+            foreground = svg.append("g")
+                .attr("class", "foreground")
+                .selectAll("path")
+                .data(cities)
+                .enter().append("path")
+                .attr("d", path);
+
+            // Add a group element for each dimension.
+            var g = svg.selectAll(".dimension")
+                .data(dimensions)
+                .enter().append("g")
+                .attr("class", "dimension")
+                .attr("transform", function (d) {
+                    return "translate(" + x(d) + ")";
+                });
+
+            // Add an axis and title.
+            g.append("g")
+                .attr("class", "axis")
+                .each(function (d) {
+                    d3.select(this).call(axis.scale(y[d]));
+                })
+                .append("text")
+                .attr("text-anchor", "middle")
+                .attr("y", -9)
+                .text(String);
+
+            // Add and store a brush for each axis.
+            g.append("g")
+                .attr("class", "brush")
+                .each(function (d) {
+                    d3.select(this).call(y[d].brush = d3.svg.brush().y(y[d]).on("brush", brush));
+                })
+                .selectAll("rect")
+                .attr("x", -8)
+                .attr("width", 16);
+        });
+
+        // Returns the path for a given data point.
+        // path是路径生成器
+        // line是一个线段生成器，dimensions是各维度的名称，p自然就是里面的一个维度
+        // x是序数比例尺，返回的是x坐标，x(p)返回的是数据p对应的屏幕位置，y[p]是p维度对应的线性比例尺，
+        // 按照推理y[p](d[p])是某维度上值对应的y坐标，那究竟是什么纬度呢
+        // 还有一个细节留意到，下标都是p
+        function path(d) {
+            return line(dimensions.map(function (p) {
+                return [x(p), y[p](d[p])];
+            }));
+        }
+        // map()返回的是一个数组，所以line(...)括号里的是生成一堆的点
+        // 所以path返回的是一堆直线
+        // map对每个属性进行了遍历，当前属性p，x(p)是他所在的x位置，d[p]是他的值，y[p]是他的线性比例尺，y[p](d[p])是它的y位置
+        // [x(p), y[p](d[p])]一行数据里，每个数据对应的[x,y]坐标，d是这一行的记录
+        // 那么就是line([[x0, y0], [x1, y1], [x2, y2],...])这样line这个线段生成器会自动生成线段
+
+        // Handles a brush event, toggling the display of foreground lines.
+        function brush() {
+            var actives = dimensions.filter(function (p) {
+                    // y[p]是p属性对应的序数比例尺
+                    return !y[p].brush.empty();
+                }), // 筛选选中的刷子（可能不止一个的哟）的属性名
+                extents = actives.map(function (p) {
+                    return y[p].brush.extent();
+                    // 因为只设置了y轴上的范围，因此返回值就是[y0, y1]，分别是y方向的下限和上限
+                }); // 获取刷子们的范围[[y0, y1], [y0, y1], [y0, y1], ...]对应于被选中了的各个属性的选中范围（定义域，并非值域）
+            foreground.style("display", function (d) { //d是foreground绑定的数据，也就是csv表
+                // foreground是每条路径的选择集，可以这么理解，绑定的一个元素就是一个城市的路径
+                return actives.every(function (p, i) { //p是其中一个选中的刷子的属性名，i是它的索引
+                    // every(func(p,i))是用来检测是否数组里所有元素是否符合条件，只有一个不符合就返回false
+                    return extents[i][0] <= d[p] && d[p] <= extents[i][1];
+                }) ? null : "none"; //null就是现实（默认），"none"就是不显示
+            });
+        }
+    </script>
