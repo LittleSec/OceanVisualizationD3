@@ -1,0 +1,257 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>大体布局</title>
+    <link rel="stylesheet" href="../static/lib/css//bootstrap.css" />
+    <link rel="stylesheet" href="../static/lib/css/keen-dashboards.css" />
+    <link rel="stylesheet" href="../static/css/visual.css" />
+    <script src="../static/lib/js/jquery-3.3.1.js" type="text/javascript"></script>
+    <script src="../static/lib/js/bootstrap.js" type="text/javascript"></script>
+    <script src="../static/lib/js/echarts.js" type="text/javascript"></script>
+    <script src="../static/lib/js/d3.v3.js" type="text/javascript"></script>
+    <script src="../static/lib/js/chroma.js" type="text/javascript"></script>
+</head>
+
+<script>
+    // 为了写注释而已
+    // 对下面svg defs marker注释
+    // 虽然不调用就不会显示，但是依然会占位置，所以想好应该放哪里，不然会顶走内容发生意外的效果。
+</script>
+<!-- <svg>
+    <defs>
+        <marker id="arrow-up" markerUnits="strokeWidth" markerWidth="12" markerHeight="12" viewBox="0 0 12 12" refX="6" refY="6"
+            orient="-90">
+            <path d="M2,2 L10,6 L2,10 L6,6 L2,2" style="fill: #000000;" />
+        </marker>
+        <marker id="arrow-down" markerUnits="strokeWidth" markerWidth="12" markerHeight="12" viewBox="0 0 12 12" refX="6" refY="6"
+            orient="90">
+            <path d="M2,2 L10,6 L2,10 L6,6 L2,2" style="fill: #000000;" />
+        </marker>
+    </defs>
+</svg> -->
+
+<body style="height: 100%">
+    <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="#">Multivariate Marine spatiotemporal data visualization analysis</a>
+            </div>
+            <ul class="nav navbar-nav navbar-right">
+                <li>
+                    <a href="#">Eddy</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="container-fluid keen-dashboard" style="height:100%;">
+        <div class="row">
+            <div class="first-row-left col-xs-9 col-sm-9 col-md-9 col-lg-9" style="height: 100%">
+                <div class="row" style="height: 60%">
+                    <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4">
+                        <div class="chart-wrapper" style="height: 100%">
+                            <div class="chart-title">
+                                dashboard
+                            </div>
+                            <div class="chart-stage leftcol-toprow">
+                                <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+                                    <div class="panel panel-default">
+                                        <div class="panel-heading" role="tab" id="headingOne">
+                                            <h4 class="panel-title">
+                                                <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                                    Sea Surface Height
+                                                </a>
+                                            </h4>
+                                        </div>
+                                        <div id="collapseOne" class="panel-collapse collapse in" role="tabpanel" aria-labelledby="headingOne">
+                                            <div class="panel-body">
+                                                <div class="btn-group-vertical" data-toggle="buttons">
+                                                    <label class="btn btn-primary active">
+                                                        <input type="radio" name="options" id="option1" autocomplete="off" checked> Sea Surface Height (ssh)
+                                                    </label>
+                                                    <label class="btn btn-primary">
+                                                        <input type="radio" name="options" id="option2" autocomplete="off"> Monthly Mean
+                                                    </label>
+                                                    <label class="btn btn-primary">
+                                                        <input type="radio" name="options" id="option3" autocomplete="off"> Anomaly
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="panel panel-default">
+                                        <div class="panel-heading" role="tab" id="headingTwo">
+                                            <h4 class="panel-title">
+                                                <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseTwo" aria-expanded="false"
+                                                    aria-controls="collapseTwo">
+                                                    Sea Water Temperature
+                                                </a>
+                                            </h4>
+                                        </div>
+                                        <div id="collapseTwo" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingTwo">
+                                            <div class="panel-body">
+                                                <div class="btn-group-vertical" data-toggle="buttons">
+                                                    <label class="btn btn-primary active">
+                                                        <input type="radio" name="options" id="option1" autocomplete="off" checked> Sea Water Temperature
+                                                    </label>
+                                                    <label class="btn btn-primary">
+                                                        <input type="radio" name="options" id="option2" autocomplete="off"> Monthly Mean
+                                                    </label>
+                                                    <label class="btn btn-primary">
+                                                        <input type="radio" name="options" id="option3" autocomplete="off"> Anomaly
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="panel panel-default">
+                                        <div class="panel-heading" role="tab" id="headingThree">
+                                            <h4 class="panel-title">
+                                                <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseThree" aria-expanded="false"
+                                                    aria-controls="collapseThree">
+                                                    Sea Water Velocity
+                                                </a>
+                                            </h4>
+                                        </div>
+                                        <div id="collapseThree" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingThree">
+                                            <div class="panel-body">
+                                                <div class="btn-group-vertical" data-toggle="buttons">
+                                                    <label class="btn btn-primary active">
+                                                        <input type="radio" name="options" id="option1" autocomplete="off" checked> Sea Water Velocity
+                                                    </label>
+                                                    <label class="btn btn-primary">
+                                                        <input type="radio" name="options" id="option2" autocomplete="off"> u
+                                                    </label>
+                                                    <label class="btn btn-primary">
+                                                        <input type="radio" name="options" id="option3" autocomplete="off"> v
+                                                    </label>
+                                                    <label class="btn btn-primary">
+                                                        <input type="radio" name="options" id="option3" autocomplete="off"> OW
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="panel panel-default">
+                                        <div class="panel-heading" role="tab" id="headingFour">
+                                            <h4 class="panel-title">
+                                                <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseFour" aria-expanded="false"
+                                                    aria-controls="collapseTwo">
+                                                    Salinity
+                                                </a>
+                                            </h4>
+                                        </div>
+                                        <div id="collapseFour" class="panel-collapse collapse" role="tabpanel" aria-labelledby="headingFour">
+                                            <div class="panel-body">
+                                                <div class="btn-group-vertical" data-toggle="buttons">
+                                                    <label class="btn btn-primary active">
+                                                        <input type="radio" name="options" id="option1" autocomplete="off" checked> Aalinity
+                                                    </label>
+                                                    <label class="btn btn-primary">
+                                                        <input type="radio" name="options" id="option2" autocomplete="off"> Monthly Mean
+                                                    </label>
+                                                    <label class="btn btn-primary">
+                                                        <input type="radio" name="options" id="option3" autocomplete="off"> Anomaly
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8" style="padding-left: 0px">
+                        <div class="chart-wrapper" style="height: 100%">
+                            <div class="chart-title">
+                                map
+                            </div>
+                            <div class="chart-stage leftcol-toprow">
+                                <div class="row heatmap leftcol-toprow">
+                                    <div id="depthselector" class="col-xs-1 col-sm-1 col-md-1 col-lg-1" style="padding-right:0;">
+                                        <button type="button" class="btn btn-default btn-sm">
+                                            <span class="glyphicon glyphicon-chevron-up" aria-hidden="true"></span> 2008
+                                        </button>
+                                        <svg width="100%" , height="100%">
+
+                                        </svg>
+                                    </div>
+                                    <div id="heatmap" class="col-xs-9 col-sm-9 col-md-9 col-lg-9">
+                                        <svg width="100%" , height="100%"></svg>
+                                    </div>
+                                    <div id="colorbar" class="col-xs-1 col-sm-1 col-md-1 col-lg-1">
+                                        <svg width="100%" , height="100%"></svg>
+                                    </div>
+                                    <div id="dateselector" class="col-xs-1 col-sm-1 col-md-1 col-lg-1">
+                                        <button type="button" class="btn btn-default">
+                                            <span class="glyphicon glyphicon-chevron-up" aria-hidden="true"></span> 2008
+                                        </button>
+                                        <div class="btn-group-vertical" role="group" aria-label="...">
+                                            <button type="button" class="btn btn-default btn-sm">Jan</button>
+                                            <button type="button" class="btn btn-default btn-sm">Feb</button>
+                                            <button type="button" class="btn btn-default btn-sm">Mar</button>
+                                            <button type="button" class="btn btn-default btn-sm">Apr</button>
+                                            <button type="button" class="btn btn-default btn-sm">May</button>
+                                            <button type="button" class="btn btn-default btn-sm">Jun</button>
+                                            <button type="button" class="btn btn-default btn-sm">Jul</button>
+                                            <button type="button" class="btn btn-default btn-sm">Aug</button>
+                                            <button type="button" class="btn btn-default btn-sm">Sep</button>
+                                            <button type="button" class="btn btn-default btn-sm">Oct</button>
+                                            <button type="button" class="btn btn-default btn-sm">Nov</button>
+                                            <button type="button" class="btn btn-default btn-sm">Dec</button>
+                                        </div>
+                                        <button type="button" class="btn btn-default">
+                                            <span class="glyphicon glyphicon-chevron-down" aria-hidden="true"></span> 2007
+                                        </button>
+                                        <!-- <svg width="100%" , height="100%"></svg> -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row" style="height: 40%">
+                    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                        <div class="chart-wrapper" style="height: 100%">
+                            <div class="chart-title">
+                                parallel
+                            </div>
+                            <div class="chart-stage">
+                                <div id="parallel-coordinate">
+                                    <svg width="100%" , height="100%"></svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="first-row-right col-xs-3 col-sm-3 col-md-3 col-lg-3" style="padding-left: 0px; height: 100%">
+                <div class="chart-wrapper" style="height: 100%">
+                    <div class="chart-title">
+                        other graph
+                    </div>
+                    <div class="chart-stage graphs-group" style="overflow-y:auto;">
+                        <div id="ssh-sst" class="one-graph col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                            <svg width="100%" , height="100%"></svg>
+                        </div>
+                        <div id="ssh-salt" class="one-graph col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                            <svg width="100%" , height="100%"></svg>
+                        </div>
+                        <div id="salt-sst" class="one-graph col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                            <svg width="100%" , height="100%"></svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="../static/js/heatmap.js" type="text/javascript"></script>
+    <script src="../static/js/graph.js" type="text/javascript"></script>
+    <script src="../static/js/paraller.js" type="text/javascript"></script>
+    <script src="../static/js/init.js"></script>
+</body>
+
+</html>
