@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8" />
+    <title>twoYaxisScatter</title>
+    <script src="../static/lib/js/jquery-3.3.1.js" type="text/javascript"></script>
+    <script src="../static/lib/js/d3.v3.js" type="text/javascript"></script>
+    <script src="../static/lib/js/crossfilter.js" type="text/javascript"></script>
+    <script src="../static/lib/js/dc.js" type="text/javascript"></script>
+    <link rel="stylesheet" href="../static/lib/css/dc.css" />
+</head>
+
+<body>
+    <div id="two-yaxis-scatter">
+    </div>
+
+    <script>
+        var twoYChart = dc.compositeChart("#two-yaxis-scatter");
+        var csvfile = './twoYaxisScatter.csv';
+        d3.csv(csvfile, function(err, data){
+            var ndx = crossfilter(data);
+            var xdim = ndx.dimension(function(d){
+                return +d.ssh;
+            });
+            var xLeftdim = ndx.dimension(function(d){
+                return [+d.ssh, +d.u];
+            });
+            var xRightdim = ndx.dimension(function(d){
+                return [+d.ssh, +d.v];
+            });
+            var xLgroup = xLeftdim.group();
+            var xRgroup = xRightdim.group();
+
+            twoYChart.width(500)
+                .height(500)
+                .transitionDuration(1000)
+                .margins({top: 30, right: 50, bottom: 30, left: 50})
+                .dimension(xdim)
+                .shareTitle(false)
+                .x(d3.scale.linear().domain(d3.extent(data, function(d){return +d.ssh;})))
+                .elasticY(true)
+                .legend(dc.legend().x(70).y(10).itemHeight(13).gap(5))
+                .brushOn(false)
+                .compose([
+                    dc.scatterPlot(twoYChart)
+                            .dimension(xLeftdim)
+                            .group(xLgroup, "ssh-u") //字符串是用来设置图标的
+                            .nonemptyOpacity(0.3),
+                    dc.scatterPlot(twoYChart)
+                            .dimension(xRightdim)
+                            .group(xRgroup, "ssh-v")
+                            .nonemptyOpacity(0.3)
+                            .ordinalColors(["orange"])
+                            .yAxisLabel('v')
+                            .useRightYAxis(true)
+                ])
+                .xAxisLabel('ssh').yAxisLabel('u').rightYAxisLabel('v');
+            twoYChart.render();
+        });
+    </script>
+</body>
+
+</html>
