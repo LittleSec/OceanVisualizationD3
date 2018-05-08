@@ -83,11 +83,18 @@ $(".first-row-right").height(
     }
 );
 
-// 重新设置右列两行的高度
-// 散点图的大小一样
-$(".first-row-right").children().height(
+// 设置右列及其子元素的高度
+$(".two-yAxis-charts").height(
+    function(){
+        h1 = $(".first-row-right").height() - $(".keen-dashboard .chart-wrapper .chart-title").height();
+        h2 = h1 - 2*parseFloat($(".keen-dashboard .chart-wrapper").css("margin-bottom")) - parseFloat($(".keen-dashboard .chart-wrapper .chart-stage").css("padding-top"));
+        // 在css里，margin-bottom是10px
+        return h2;
+    }
+);
+$(".two-yAxis-charts").children().height(
     function () {
-        return $(this).width();
+        return $(this).parent().height()/3;
     }
 );
 
