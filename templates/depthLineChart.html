@@ -9,39 +9,50 @@
     <script src="../static/lib/js/crossfilter.js" type="text/javascript"></script>
     <script src="../static/lib/js/dc.js" type="text/javascript"></script>
     <link rel="stylesheet" href="../static/lib/css/dc.css" />
+    <style>
+        #volume-chart g.y {
+            display: none;
+        }
+    </style>
 </head>
 
 <body>
     <div id="depth-line-chart">
     </div>
 
+    <div id="volume-chart">
+
+    </div>
+
     <script>
         var moveChart = dc.compositeChart("#depth-line-chart");
+        var volumeChart = dc.lineChart("#volume-chart");
+
         d3.csv("./depthLineChart.csv", function (error, data) {
             var dateFormat = d3.time.format("%m/%d/%Y");
             var numberFormat = d3.format(".2f");
 
             data.forEach(function (e) {
-            e.dd = dateFormat.parse(e.date);
-            e.day = d3.time.day(e.dd); // pre-calculate month for better performance
-        });
+                e.dd = dateFormat.parse(e.date);
+                e.day = d3.time.day(e.dd); // pre-calculate month for better performance
+            });
 
-        var ndx = crossfilter(data);
-        // monthly index avg fluctuation in percentage
-        var moveMonths = ndx.dimension(function (d) {
-            return d.day;
-        });
-        var monthlyMoveGroup = moveMonths.group().reduceSum(function (d) {
-            return +d.close;
-        });
-        var indexAvgByMonthGroup = moveMonths.group().reduceSum(function (d){
-            return +d.volume;
-        });
+            var ndx = crossfilter(data);
+            // monthly index avg fluctuation in percentage
+            var moveMonths = ndx.dimension(function (d) {
+                return d.day;
+            });
+            var monthlyMoveGroup = moveMonths.group().reduceSum(function (d) {
+                return +d.close;
+            });
+            var indexAvgByMonthGroup = moveMonths.group().reduceSum(function (d) {
+                return +d.volume;
+            });
 
-        moveChart.width(600)
+            moveChart.width(600)
                 .height(300)
-                .transitionDuration(1000)
-                .margins({top: 30, right: 50, bottom: 25, left: 60})
+                .transitionDuration(100)
+                .margins({ top: 30, right: 50, bottom: 25, left: 60 })
                 .dimension(moveMonths)
                 .mouseZoomable(true)
                 .shareTitle(false)
@@ -49,20 +60,49 @@
                 .round(d3.time.day.round)
                 .xUnits(d3.time.days)
                 .elasticY(true)
-                .renderHorizontalGridLines(true)
                 .legend(dc.legend().x(70).y(10).itemHeight(13).gap(5))
                 .brushOn(false)
+                .rangeChart(volumeChart)
                 .compose([
                     dc.lineChart(moveChart)
-                            .group(indexAvgByMonthGroup, "Monthly Index Average"),
+                        .group(indexAvgByMonthGroup, "Monthly Index Average"),
                     dc.lineChart(moveChart)
-                            .group(monthlyMoveGroup, "Monthly Index Move")
-                            .ordinalColors(["orange"])
-                            .useRightYAxis(true)
+                        .group(monthlyMoveGroup, "Monthly Index Move")
+                        .ordinalColors(["orange"])
+                        .useRightYAxis(true)
                 ])
                 .yAxisLabel("Monthly Index Average")
-                .rightYAxisLabel("Monthly Index Move")
-                .renderHorizontalGridLines(true);
+                .rightYAxisLabel("Monthly Index Move");
+
+            // volumeChart.width(600)
+            //     .height(50)
+            //     .margins({ top: 0, right: 50, bottom: 25, left: 60 })
+            //     .dimension(moveMonths)
+            //     .x(d3.time.scale().domain([new Date(1985, 0, 1), new Date(2012, 11, 31)]))
+            //     .round(d3.time.day.round)
+            //     .xUnits(d3.time.days)
+            //     .compose([
+            //         dc.lineChart(volumeChart)
+            //             .group(indexAvgByMonthGroup),
+            //         dc.lineChart(volumeChart)
+            //             .group(monthlyMoveGroup)
+            //             .ordinalColors(["orange"])
+            //             .useRightYAxis(true)
+            //     ]);
+
+            volumeChart.width(600) /* dc.barChart('#monthly-volume-chart', 'chartGroup'); */
+                .height(40)
+                .margins({ top: 0, right: 50, bottom: 20, left: 40 })
+                .dimension(moveMonths)
+                .group(indexAvgByMonthGroup)
+                .x(d3.time.scale().domain([new Date(1985, 0, 1), new Date(2012, 11, 31)]))
+                .round(d3.time.month.round)
+                .xUnits(d3.time.months)
+                // .centerBar(true)
+                // .gap(0)
+                // .alwaysUseRounding(true)
+                ;
+            volumeChart.yAxis().ticks(0);
 
             dc.renderAll();
         });
