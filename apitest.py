@@ -8,7 +8,8 @@ ATTR_DEFAULT_1 = 'ssh'  # 默认海洋属性1 ssh
 ATTR_DEFAULT_2 = 'temp'  # 默认海洋属性2 temp
 TIME_DEFAULT = '2000-01-16'  # 默认时间
 DEPTH_DEFAULT = '5p01m'  # 默认深度
-
+DEPTH_LIST = ['0.0m', '8.0m', '15.0m', '30.0m', '50.0m']
+ATTR_LIST = ['ssh', 'salinity', 'water_temp', 'water_u', 'water_v']
 
 def get_data_heatmap(request):
     '''
@@ -117,6 +118,32 @@ def get_data_paraller(request):
     df2.columns = columns
     # 不需要经纬度
     return df2.drop(columns=['lon', 'lat']).to_json(orient='records')
+
+
+def get_data_bylonlat(request):
+    '''
+    request.json是个dict，下面是个例子
+    {
+        "lon": 128.80,
+        "lat": 32.88
+    }
+    '''
+    dataInfo = request.json
+    res = []
+    for depth in DEPTH_LIST:
+        absPath = '/'.join([ROOTPATH, depth])
+        fileList = os.listdir(absPath)
+        for file in fileList:
+            if file[-4:] == '.csv':
+                dict1 = {}
+                df1 = pd.read_csv('/'.join([absPath, file]))
+                queryExpr = 'lon=={0} and lat=={1}'.format(dataInfo['lon'], dataInfo['lat'])
+                qdf = df1.query(queryExpr).drop(columns=['lon', 'lat'])
+                dict1 = qdf.to_dict('record')
+                dict1[0]['date'] = file[:-4]
+                dict1[0]['depth'] = depth
+                res.append(dict1)
+    return jsonify(res)
 
 
 def test(attr):
