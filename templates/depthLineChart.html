@@ -12,12 +12,12 @@
 </head>
 
 <body>
-    <div id="depth-line-char">
+    <div id="depth-line-chart">
     </div>
 
     <script>
-        var moveChart = dc.compositeChart("#depth-line-char");
-        d3.csv("monthly-move.csv", function (error, data) {
+        var moveChart = dc.compositeChart("#depth-line-chart");
+        d3.csv("./depthLineChart.csv", function (error, data) {
             var dateFormat = d3.time.format("%m/%d/%Y");
             var numberFormat = d3.format(".2f");
 
@@ -35,7 +35,7 @@
             return +d.close;
         });
         var indexAvgByMonthGroup = moveMonths.group().reduceSum(function (d){
-            return +d.open;
+            return +d.volume;
         });
 
         moveChart.width(600)
