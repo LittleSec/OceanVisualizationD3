@@ -19,7 +19,7 @@
 <body>
     <div id="depth-line-chart">
     </div>
-
+<br/><br/><br/><br/>
     <div id="volume-chart">
 
     </div>
@@ -92,7 +92,7 @@
 
             volumeChart.width(600) /* dc.barChart('#monthly-volume-chart', 'chartGroup'); */
                 .height(40)
-                .margins({ top: 0, right: 50, bottom: 20, left: 40 })
+                .margins({ top: 0, right: 50, bottom: 20, left: 60 })
                 .dimension(moveMonths)
                 .group(indexAvgByMonthGroup)
                 .x(d3.time.scale().domain([new Date(1985, 0, 1), new Date(2012, 11, 31)]))
