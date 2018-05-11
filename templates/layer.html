@@ -15,24 +15,6 @@
     <script src="../static/lib/js/chroma.js" type="text/javascript"></script>
 </head>
 
-<script>
-    // 为了写注释而已
-    // 对下面svg defs marker注释
-    // 虽然不调用就不会显示，但是依然会占位置，所以想好应该放哪里，不然会顶走内容发生意外的效果。
-</script>
-<!-- <svg>
-    <defs>
-        <marker id="arrow-up" markerUnits="strokeWidth" markerWidth="12" markerHeight="12" viewBox="0 0 12 12" refX="6" refY="6"
-            orient="-90">
-            <path d="M2,2 L10,6 L2,10 L6,6 L2,2" style="fill: #000000;" />
-        </marker>
-        <marker id="arrow-down" markerUnits="strokeWidth" markerWidth="12" markerHeight="12" viewBox="0 0 12 12" refX="6" refY="6"
-            orient="90">
-            <path d="M2,2 L10,6 L2,10 L6,6 L2,2" style="fill: #000000;" />
-        </marker>
-    </defs>
-</svg> -->
-
 <body style="height: 100%">
     <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
         <div class="container-fluid">
@@ -58,7 +40,38 @@
                             </div>
                             <div class="chart-stage leftcol-toprow">
                                 <div class="dashboard">
-                                    各种选项
+                                    <div class="attr-selector col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                                        <label style="margin-top: 10px;;">Ocean Attributes</label>
+                                        <div class="radio-group">
+                                            <div class="radio" style="margin-top: 0;">
+                                                <label class="radio-inline">
+                                                    <input type="radio" name="inlineRadioOptions" id="inlineRadio1" value="option1" checked> ssh
+                                                </label>
+                                                <label class="radio-inline">
+                                                    <input type="radio" name="inlineRadioOptions" id="inlineRadio2" value="option2"> temp
+                                                </label>
+                                                <label class="radio-inline">
+                                                    <input type="radio" name="inlineRadioOptions" id="inlineRadio3" value="option3"> salt
+                                                </label>
+                                            </div>
+                                            <div class="radio">
+                                                <label class="radio-inline">
+                                                    <input type="radio" name="inlineRadioOptions" id="inlineRadio4" value="option4"> water_u
+                                                </label>
+                                                <label class="radio-inline">
+                                                    <input type="radio" name="inlineRadioOptions" id="inlineRadio5" value="option5"> water_v
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="line-spacing col-xs-12 col-sm-12 col-md-12 col-lg-12" style="height: 2em;"></div>
+                                    <div class="date-selector col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                                        <label for="">Date Time</label>
+                                    </div>
+                                    <div class="line-spacing col-xs-12 col-sm-12 col-md-12 col-lg-12" style="height: 2em;"></div>
+                                    <div class="depth-selector col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                                        <label for="">Depth</label>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -71,7 +84,14 @@
                             <div class="chart-stage leftcol-toprow">
                                 <div class="row heatmap leftcol-toprow">
                                     <div class="col-xs-1 col-sm-1 col-md-1 col-lg-1">
-                                        <!-- dataselector -->
+                                        <!-- 这部分只是为留一个空隙，方便主视图居中，顺便把箭头的marker放这里。 -->
+                                        <svg>
+                                            <defs>
+                                                <marker id="arrow" markerUnits="strokeWidth" markerWidth="6" markerHeight="6" viewBox="0 0 6 6" refX="3" refY="3" orient="auto">
+                                                    <path d="M3,1 L6,3 L3,5 L4,3 L3,1" class="arrow" />
+                                                </marker>
+                                            </defs>
+                                        </svg>
                                     </div>
                                     <div id="heatmap" class="col-xs-9 col-sm-9 col-md-9 col-lg-9">
                                         <svg width="100%" , height="100%"></svg>
