@@ -98,6 +98,14 @@ $(".two-yAxis-charts").children().height(
     }
 );
 
+function numToStr(num) {
+    return num.toString().replace('.', 'p');
+}
+
+function strToNum(str) {
+    return parseFloat(str.replace('p', '.'));
+}
+
 var svgSelector = d3.select("#heatmap svg")
 var gSelector = svgSelector.append("g");
 var colorInterp = chroma.scale("Spectral").domain([1, 0]).padding(0.1);
