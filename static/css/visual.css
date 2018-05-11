@@ -42,3 +42,9 @@
     stroke: #fff;
     shape-rendering: crispEdges;
 }
+
+/* 箭头线样式 */
+.arrow {
+    stroke: black;
+    fill: black;
+}

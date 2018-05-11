@@ -211,7 +211,7 @@ function printColorBar(svgSelector, min, max, colorInterp) {
     // 如果使用能指定配字个数的代码，那么传过来的选择集应该是g
     svgSelector.selectAll("g").remove();
     gSelector = svgSelector.append("g");
-    var colorBarWidth = parseFloat(svgSelector.style("width")) * 0.6;
+    var colorBarWidth = parseFloat(svgSelector.style("width")) * 0.3;
     var colorBarHeigth = 200; //也意味着共画几个矩形，一个矩形固定高度为1px
     var startX = 0;
     var startY = parseFloat(svgSelector.style("height")) - colorBarHeigth - 40; //预留配字，不然碰底了
