@@ -15,24 +15,6 @@
     <script src="../static/lib/js/chroma.js" type="text/javascript"></script>
 </head>
 
-<script>
-    // 为了写注释而已
-    // 对下面svg defs marker注释
-    // 虽然不调用就不会显示，但是依然会占位置，所以想好应该放哪里，不然会顶走内容发生意外的效果。
-</script>
-<!-- <svg>
-    <defs>
-        <marker id="arrow-up" markerUnits="strokeWidth" markerWidth="12" markerHeight="12" viewBox="0 0 12 12" refX="6" refY="6"
-            orient="-90">
-            <path d="M2,2 L10,6 L2,10 L6,6 L2,2" style="fill: #000000;" />
-        </marker>
-        <marker id="arrow-down" markerUnits="strokeWidth" markerWidth="12" markerHeight="12" viewBox="0 0 12 12" refX="6" refY="6"
-            orient="90">
-            <path d="M2,2 L10,6 L2,10 L6,6 L2,2" style="fill: #000000;" />
-        </marker>
-    </defs>
-</svg> -->
-
 <body style="height: 100%">
     <div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
         <div class="container-fluid">
@@ -102,7 +84,14 @@
                             <div class="chart-stage leftcol-toprow">
                                 <div class="row heatmap leftcol-toprow">
                                     <div class="col-xs-1 col-sm-1 col-md-1 col-lg-1">
-                                        <!-- dataselector -->
+                                        <!-- 这部分只是为留一个空隙，方便主视图居中，顺便把箭头的marker放这里。 -->
+                                        <svg>
+                                            <defs>
+                                                <marker id="arrow" markerUnits="strokeWidth" markerWidth="6" markerHeight="6" viewBox="0 0 6 6" refX="3" refY="3" orient="auto">
+                                                    <path d="M3,1 L6,3 L3,5 L4,3 L3,1" class="arrow" />
+                                                </marker>
+                                            </defs>
+                                        </svg>
                                     </div>
                                     <div id="heatmap" class="col-xs-9 col-sm-9 col-md-9 col-lg-9">
                                         <svg width="100%" , height="100%"></svg>
