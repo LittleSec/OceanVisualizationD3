@@ -3,6 +3,7 @@ from flask import jsonify, request, json
 from datetime import timedelta
 import os
 import pandas as pd
+import time
 app = Flask(__name__)
 
 app.config['SEND_FILE_MAX_AGE_DEFAULT'] = timedelta(seconds=120)  # 将缓存最大时间设置为1s
@@ -16,14 +17,14 @@ def hello_world():
 
 # 以下是api，供前端ajax调用
 # 以下变量用于合法性检查，暂时无用
-ROOTPATH = './oceandata/'  # 路径和文件名规律: ./oceandata/0p083/ssh/xxx.csv
-RESULATION_DEFAULT = '0p083'  # 默认分辨率
-ATTR_DEFAULT_1 = 'ssh'  # 默认海洋属性1 ssh
-ATTR_DEFAULT_2 = 'temp'  # 默认海洋属性2 temp
-TIME_DEFAULT = '2000-01-16'  # 默认时间
-DEPTH_DEFAULT = '5p01m'  # 默认深度
+ROOTPATH = './oceandata/'  # 路径和文件名规律: ./oceandata/depth/2014-07-01.csv
+RESULATION_DEFAULT = '0p08'  # 默认分辨率
+ATTR_DEFAULT_1 = 'surf_el'  # 默认海洋属性1 surf_el
+ATTR_DEFAULT_2 = 'water_temp'  # 默认海洋属性2 water_temp
+TIME_DEFAULT = '2014-07-01'  # 默认时间
+DEPTH_DEFAULT = '0.0m'  # 默认深度
 DEPTH_LIST = ['0.0m', '8.0m', '15.0m', '30.0m', '50.0m']
-ATTR_LIST = ['salinity', 'water_temp', 'water_u', 'water_v']
+ATTR_LIST = ['surf_el', 'salinity', 'water_temp', 'water_u', 'water_v']
 
 
 @app.route('/api/test', methods=['POST'])
@@ -39,6 +40,40 @@ def apitest():
     print(type(fileInfo))
     print(fileInfo['name'], fileInfo['isOk'])
     return jsonify(df1.to_json(orient='records'))
+
+# 可考虑删除'water_u', 'water_v'两列加快传输速度
+@app.route('/api/get_data_quiver', methods=['POST'])
+def get_data_quiver():
+    '''
+    request.json是个dict, 下面是个例子
+    {
+        "time": '2016-05-06',
+        "depth": "15.0m"
+    }
+    '''
+    dataInfo = request.json
+    print(dataInfo)
+    fileName = '/'.join([ROOTPATH, 'quiver', dataInfo["depth"], dataInfo["time"]+'.csv'])
+    df = pd.read_csv(fileName)
+    return df.to_json(orient='records')
+    # return df.drop(columns=['water_u', 'water_v']).to_json(orient='records')
+
+@app.route('/api/get_data_1date1depth', methods=['POST'])
+def get_data_1date1depth():
+    '''
+    request.json是个dict, 下面是个例子
+    {
+        "time": '2016-01-01',
+        (option)"depth": "0.0m"(若缺失则默认0.0m)
+    }
+    '''
+    dataInfo = request.json
+    print(dataInfo)
+    if not "depth" in dataInfo:
+        dataInfo["depth"] = '0.0m'
+    fileName = '/'.join([ROOTPATH, dataInfo["depth"], dataInfo["time"]+'.csv'])
+    df = pd.read_csv(fileName)
+    return df.to_json(orient='records')
 
 
 @app.route('/api/get_data_heatmap', methods=['POST'])
@@ -165,20 +200,21 @@ def get_data_bylonlat():
     }
     '''
     dataInfo = request.json
-    res = []
+    print(dataInfo)
+    queryExpr = 'lon=={0} and lat=={1}'.format(dataInfo['lon'], dataInfo['lat'])
+    start = time.clock()
     for depth in DEPTH_LIST:
         absPath = '/'.join([ROOTPATH, depth])
         fileList = os.listdir(absPath)
         for file in fileList:
-            if file[-4:] == '.csv':
-                dict1 = {}
-                df1 = pd.read_csv('/'.join([absPath, file]))
-                queryExpr = 'lon=={0} and lat=={1}'.format(dataInfo['lon'], dataInfo['lat'])
-                qdf = df1.query(queryExpr).drop(columns=['lon', 'lat'])
-                dict1 = qdf.to_dict('record')
-                dict1[0]['date'] = file[:-4]
-                dict1[0]['depth'] = depth
-                res.append(dict1)
+            dict1 = {}
+            df1 = pd.read_csv('/'.join([absPath, file]))
+            qdf = df1.query(queryExpr).drop(columns=['lon', 'lat'])
+            dict1 = qdf.to_dict('record')
+            dict1[0]['date'] = file[:-4]
+            dict1[0]['depth'] = depth
+            res.append(dict1[0])
+        print("run time: "+str(time.clock()-start)+" s")
     return jsonify(res)
 
 if __name__ == '__main__':
