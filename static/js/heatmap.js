@@ -14,35 +14,8 @@ $.ajax({
     }
 });*/
 
-function numToStr(num) {
-    return num.toString().replace('.', 'p');
-}
-
-function strToNum(str) {
-    return parseFloat(str.replace('p', '.'));
-}
-
-$("#year").change(function () {
-    var year = $("#year option:selected").html();
-    var month = $("#month option:selected").html();
-    var fileName = year.toString() + '-' + month.toString() + '-16.csv';
-    //console.log(fileName);
-    readAndDraw(fileName, 0.12);
-});
-
-$("#month").change(function () {
-    var year = $("#year option:selected").html();
-    var month = $("#month option:selected").html();
-    var fileName = year.toString() + '-' + month.toString() + '-16.csv';
-    //console.log(fileName);
-    readAndDraw(fileName, 0.12);
-});
-
-// var svgSelector = d3.select("#heatmap svg")
-// var gSelector = svg.append("g");
-// var compute = chroma.scale("Spectral").domain([0, 1]).padding(0.1);
-
-//以下：print是真正绘图的，draw是前期准备例如数据然后调用print
+// 以下：print是真正绘图的，draw是前期准备例如数据然后调用print
+// 其他js文件同理
 function drawGeoMap(svgSelector, gSelector) {
     // 返回一个地图投影
     // 如果是更换地图，那么请先在调用函数前把原有的地图remove掉
@@ -94,121 +67,139 @@ function printLonLat(gSelector, geoPathGenerator, lonlat) {
         .attr("d", geoPathGenerator);
 }
 
-// todo: 后期再前端确认文件里无NaN值
+// 以下全局变量在drawHeatMap()赋值并更新，只要改变数据集，调用drawHeatMap()即可更新
+var linearsWithAttr = {}; // 存放当前时刻和深度数据中各个属性的值的线性比例尺，用于着色
+var minmaxWithAttr = {}; // 存放各个属性的最大最小值
+
+// todo: 后期在前端确认文件里无NaN值
 function drawHeatMap(gSelector, projection, dataInfo, colorInterp, hasColorBarSvg) {
     // hasColorBar要么false，要么是个svg选择集
     // dataInfo["attr"] = 'ssh';
-    // dataInfo["time"] = '2001-01-16';
-    // dataInfo["depth"] = '5p01m';
-    // dataInfo["resulation"] = '0p1';
-    var minmax = [],
-        data = [];
+    // dataInfo["time"] = '2016-01-16';
+    // dataInfo["depth"] = '0.0m';
     $.ajax({
         url: "/api/get_data_heatmap",
         type: 'POST',
         data: JSON.stringify(dataInfo), //必须是字符串序列
         contentType: 'application/json; charset=UTF-8', //必须指明contentType，否则py会当表单处理，很麻烦
-        success: minmax = function (csv, status) {
+        success: function (data, status) {
             // csv: [{lon:, lat:, value:}, {}, {}, ...]
-            csv = JSON.parse(csv);
-            for (var i = 0; i < csv.length; i++) {
-                if (csv[i].value != 'NaN') {
-                    data.push([+csv[i].lon, +csv[i].lat, +csv[i].value]);
-                }
+            var data = JSON.parse(data);
+            var dimensions = d3.keys(data[0]);
+            for (var i = 0; i < dimensions.length; i++){
+                var minmax = d3.extent(data, function(d){
+                    return +d[dimensions[i]];
+                });
+                minmaxWithAttr[dimensions[i]] = minmax;
+                linearsWithAttr[dimensions[i]] = d3.scale.linear()
+                    .domain(minmax)
+                    .range([0, 1]);
             }
-            minmax = printHeatMap(gSelector, projection, data, colorInterp, strToNum(dataInfo["resulation"]));
+            data.forEach(function(d) {
+                var xy = projection([d.lon, d.lat]);
+                d.x = xy[0];
+                d.y = xy[1];
+            });
+
+            printHeatMap(gSelector, projection, data, colorInterp, dataInfo["attr"]);
             if (hasColorBarSvg) {
-                printColorBar(hasColorBarSvg, minmax[0], minmax[1], colorInterp);
+                printColorBar(hasColorBarSvg, minmaxWithAttr[dataInfo["attr"]], colorInterp);
             }
         }
     });
 }
 
-function printHeatMap(gSelector, projection, data, colorInterp, step) {
-    // 返回数据中的最大最小值，一个数组
-    var minmax = d3.extent(data, function (d) {
-        return d[2];
-    });
-
-    var linear = d3.scale.linear()
-        .domain([minmax[0], minmax[1]])
-        .range([0, 1]);
+// 画热力图，更换数据集后初次调用
+function printHeatMap(gSelector, projection, data, colorInterp, attr) {
+    var step = 0.09; // 2/25 + exp，以免有间隙
+    var linear = linearsWithAttr[attr];
 
     var update = gSelector.selectAll("rect").data(data);
     var enter = update.enter();
     var exit = update.exit();
 
     update.attr("x", function (d) {
-            return projection([d[0], d[1]])[0];
+            return d.x;
         })
         .attr("y", function (d) {
-            return projection([d[0], d[1]])[1];
+            return d.y;
         })
         .attr("width", function (d) {
-            var xadd = projection([d[0] + step, d[1]])[0];
-            var x = projection([d[0], d[1]])[0];
-            return xadd - x;
+            var xadd = projection([d.lon + step, d.lat])[0];
+            return xadd - d.x;
         })
         .attr("height", function (d) {
-            var yadd = projection([d[0], d[1] + step])[1];
-            var y = projection([d[0], d[1]])[1];
-            return y - yadd;
+            var yadd = projection([d.lon, d.lat + step])[1];
+            return d.y - yadd;
         })
         .transition() //启动添加元素时的过渡
-        .duration(500) //设定过渡时间
+        .duration(200) //设定过渡时间
         .style("fill", function (d) {
-            return colorInterp(linear(d[2]));
+            return colorInterp(linear(d[attr]));
         });
 
     enter.append("rect")
         .attr("x", function (d) {
-            return projection([d[0], d[1]])[0];
+            return d.x;
         })
         .attr("y", function (d) {
-            return projection([d[0], d[1]])[1];
+            return d.y;
         })
         .attr("width", function (d) {
-            var xadd = projection([d[0] + step, d[1]])[0];
-            var x = projection([d[0], d[1]])[0];
-            return xadd - x;
+            var xadd = projection([d.lon + step, d.lat])[0];
+            return xadd - d.x;
         })
         .attr("height", function (d) {
-            var yadd = projection([d[0], d[1] + step])[1];
-            var y = projection([d[0], d[1]])[1];
-            return y - yadd;
+            var yadd = projection([d.lon, d.lat + step])[1];
+            return d.y - yadd;
         })
         .on("mouseover", function (d) {
             var width = d3.select(this).attr("width");
             var height = d3.select(this).attr("height");
             d3.select(this).attr({
-                "width": width*2,
-                "height": height*2
+                "width": width * 2,
+                "height": height * 2
             }).style("stroke", "black");
-            //console.log(projection([d[0], d[1]]));
+            //console.log(projection([d.lon, d.lat]));
         })
         .on("mouseout", function (d) {
             var width = d3.select(this).attr("width");
             var height = d3.select(this).attr("height");
             d3.select(this).attr({
-                "width": width/2,
-                "height": height/2
+                "width": width / 2,
+                "height": height / 2
             }).style("stroke", "none");
         })
         .transition() //启动添加元素时的过渡
-        .duration(500) //设定过渡时间
+        .duration(200) //设定过渡时间
         .style("fill", function (d) {
-            return colorInterp(linear(d[2]));
+            return colorInterp(linear(d[attr]));
         });
 
     exit.transition() //启动添加元素时的过渡
-        .duration(500) //设定过渡时间
+        .duration(100) //设定过渡时间
         .remove();
-
-    return minmax;
 }
 
-function printColorBar(svgSelector, min, max, colorInterp) {
+// 画热力图，仅改变属性时直接调用
+function changeAttrHeatMap(attr, gSelector, colorInterp, hasColorBarSvg) {
+    var linear = linearsWithAttr[attr];
+    gSelector.selectAll("rect")
+        .transition()
+        .duration(200)
+        .style("fill", function (d) {
+            return colorInterp(linear(d[attr]));
+        });
+    if (hasColorBarSvg){
+        printColorBar(hasColorBarSvg, minmaxWithAttr[attr], colorInterp);
+    }
+}
+
+// 画颜色条
+function printColorBar(svgSelector, minmax, colorInterp) {
     // 如果使用能指定配字个数的代码，那么传过来的选择集应该是g
+    var min = minmax[0];
+    var max = minmax[1];
     svgSelector.selectAll("g").remove();
     gSelector = svgSelector.append("g");
     var colorBarWidth = parseFloat(svgSelector.style("width")) * 0.3;
