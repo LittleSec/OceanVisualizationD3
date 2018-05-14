@@ -45,21 +45,32 @@
                                         <div class="radio-group">
                                             <div class="radio" style="margin-top: 0;">
                                                 <label class="radio-inline">
-                                                    <input type="radio" name="inlineRadioOptions" id="inlineRadio1" value="option1" checked> ssh
+                                                    <input type="radio" name="surf_el" value="surf_el" checked> ssh
                                                 </label>
                                                 <label class="radio-inline">
-                                                    <input type="radio" name="inlineRadioOptions" id="inlineRadio2" value="option2"> temp
+                                                    <input type="radio" name="water_temp" value="water_temp"> sst
                                                 </label>
                                                 <label class="radio-inline">
-                                                    <input type="radio" name="inlineRadioOptions" id="inlineRadio3" value="option3"> salt
+                                                    <input type="radio" name="salinity" value="salinity"> salinity
                                                 </label>
                                             </div>
                                             <div class="radio">
                                                 <label class="radio-inline">
-                                                    <input type="radio" name="inlineRadioOptions" id="inlineRadio4" value="option4"> water_u
+                                                    <input type="radio" name="water_u" value="water_u"> water_u
                                                 </label>
                                                 <label class="radio-inline">
-                                                    <input type="radio" name="inlineRadioOptions" id="inlineRadio5" value="option5"> water_v
+                                                    <input type="radio" name="water_v" value="water_v"> water_v
+                                                </label>
+                                                <label class="radio-inline">
+                                                    <input type="checkbox" name="quiver" value="quiver"> quiver
+                                                </label>
+                                            </div>
+                                            <div class="radio">
+                                                <label class="radio-inline">
+                                                    <input type="radio" name="sla" value="sla"> sla
+                                                </label>
+                                                <label class="radio-inline">
+                                                    <input type="radio" name="ow" value="ow"> Okubo-Weiss
                                                 </label>
                                             </div>
                                         </div>
@@ -127,13 +138,16 @@
                         </div>
                         <div class="two-yAxis-charts chart-stage" style="overflow-y:auto;">
                             <div id="scatter" class="col-xs-12 col-sm-12 col-md-12 col-lg-12" style="padding-left: 0; padding-right: 0;">
-                                <svg width="100%" , height="100%"></svg>
+                                <!-- <svg width="100%" , height="100%"></svg> -->
                             </div>
                             <div id="depth-line-char" class="col-xs-12 col-sm-12 col-md-12 col-lg-12" style="padding-left: 0; padding-right: 0;">
-                                <svg width="100%" , height="100%"></svg>
+                                <!-- <svg width="100%" , height="100%"></svg> -->
                             </div>
                             <div id="time-line-char" class="col-xs-12 col-sm-12 col-md-12 col-lg-12" style="padding-left: 0; padding-right: 0;">
-                                <svg width="100%" , height="100%"></svg>
+                                <!-- <svg width="100%" , height="100%"></svg> -->
+                            </div>
+                            <div id="time-range-chart" class="col-xs-12 col-sm-12 col-md-12 col-lg-12" style="padding-left: 0; padding-right: 0;">
+                                <!-- <svg width="100%" , height="100%"></svg> -->
                             </div>
                         </div>
                     </div>
