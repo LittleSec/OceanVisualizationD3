@@ -41,6 +41,23 @@ def apitest():
     print(fileInfo['name'], fileInfo['isOk'])
     return jsonify(df1.to_json(orient='records'))
 
+# 可考虑删除'water_u', 'water_v'两列加快传输速度
+@app.route('/api/get_data_quiver', methods=['POST'])
+def get_data_quiver():
+    '''
+    request.json是个dict, 下面是个例子
+    {
+        "time": '2016-05-06',
+        "depth": "15.0m"
+    }
+    '''
+    dataInfo = request.json
+    print(dataInfo)
+    fileName = '/'.join([ROOTPATH, 'quiver', dataInfo["depth"], dataInfo["time"]+'.csv'])
+    df = pd.read_csv(fileName)
+    return df.to_json(orient='records')
+    # return df.drop(columns=['water_u', 'water_v']).to_json(orient='records')
+
 @app.route('/api/get_data_1date1depth', methods=['POST'])
 def get_data_1date1depth():
     '''
