@@ -14,6 +14,8 @@ $.ajax({
     }
 });*/
 
+var curdata;
+
 // 以下：print是真正绘图的，draw是前期准备例如数据然后调用print
 // 其他js文件同理
 function drawGeoMap(svgSelector, gSelector) {
@@ -78,16 +80,17 @@ function drawHeatMap(gSelector, projection, dataInfo, colorInterp, hasColorBarSv
     // dataInfo["time"] = '2016-01-16';
     // dataInfo["depth"] = '0.0m';
     $.ajax({
-        url: "/api/get_data_heatmap",
+        url: "/api/get_data_1date1depth",
         type: 'POST',
         data: JSON.stringify(dataInfo), //必须是字符串序列
         contentType: 'application/json; charset=UTF-8', //必须指明contentType，否则py会当表单处理，很麻烦
         success: function (data, status) {
             // csv: [{lon:, lat:, value:}, {}, {}, ...]
-            var data = JSON.parse(data);
+            data = JSON.parse(data);
+            var curdata = data.slice();
             var dimensions = d3.keys(data[0]);
-            for (var i = 0; i < dimensions.length; i++){
-                var minmax = d3.extent(data, function(d){
+            for (var i = 0; i < dimensions.length; i++) {
+                var minmax = d3.extent(data, function (d) {
                     return +d[dimensions[i]];
                 });
                 minmaxWithAttr[dimensions[i]] = minmax;
@@ -95,19 +98,135 @@ function drawHeatMap(gSelector, projection, dataInfo, colorInterp, hasColorBarSv
                     .domain(minmax)
                     .range([0, 1]);
             }
-            data.forEach(function(d) {
+            data.forEach(function (d) {
                 var xy = projection([d.lon, d.lat]);
                 d.x = xy[0];
                 d.y = xy[1];
             });
-
             printHeatMap(gSelector, projection, data, colorInterp, dataInfo["attr"]);
             if (hasColorBarSvg) {
                 printColorBar(hasColorBarSvg, minmaxWithAttr[dataInfo["attr"]], colorInterp);
             }
+            // 这个监听不能放外面，因为传的是当前的gSelector，是绑定了数据的gSelector
+            $('input[type=radio][name=optionsRadios]').change(function () {
+                changeAttrHeatMap(this.value, gSelector, colorInterp, colorbarSvg)
+            });
+            function mydata() {
+                var data = [];
+                for (var i in curdata) {
+                    data.push({ "values": curdata[i] })
+                }
+                console.log(data);
+                return data;
+                // return [
+                //     {
+                //         values: {
+                //             "P1": "13",
+                //             "P2": "8",
+                //             "P3": "360",
+                //             "P4": "175",
+                //             "P5": "3821",
+                //             "P6": "11",
+                //             "P7": "73"
+                //         },
+                //     }
+                // ];
+            }
+            nv.addGraph(function () {
+
+                var dim = dimensions1();
+                chart = nv.models.parallelCoordinatesChart()
+                    .dimensionData(dim)
+                    .displayBrush(false)
+                    .lineTension(0.85);
+            
+            
+                var data = mydata();
+                d3.select('#parallel')
+                    .datum(data)
+                    .call(chart);
+                nv.utils.windowResize(chart.update);
+            
+            
+                chart.dispatch.on('brushEnd', function (e) {
+                    d3.select("#resetBrushButton").style("visibility", "visible");
+                });
+            
+            
+                chart.dispatch.on('dimensionsOrder', function (e, b) {
+                    if (b) {
+                        d3.select("#resetSortingButton").style("visibility", "visible");
+                    }
+                });
+            
+                return chart;
+            });
         }
     });
 }
+
+function resetBrush() {
+    chart.filters([]);
+    chart.active([]);
+    chart.displayBrush(true);
+    d3.select("#resetBrushButton").style("visibility", "hidden");
+    chart.update();
+}
+
+function resetSorting() {
+    var dim = chart.dimensionData();
+    dim.map(function (d) { return d.currentPosition = d.originalPosition; });
+    dim.sort(function (a, b) { return a.originalPosition - b.originalPosition; });
+    chart.dimensionData(dim);
+    d3.select("#resetSortingButton").style("visibility", "hidden");
+    chart.update();
+}
+
+
+
+
+
+function dimensions1() {
+    return [
+        {
+            key: "lon",
+            format: d3.format("0.2f"),
+            tooltip: "lon",
+        },
+        {
+            key: "lat",
+            format: d3.format("0.2f"),
+            tooltip: "lat",
+        },
+        {
+            key: "surf_el",
+            format: d3.format("0.6f"),
+            tooltip: "surf_el",
+        },
+        {
+            key: "salinity",
+            format: d3.format("0.6f"),
+            tooltip: "salinity",
+        },
+        {
+            key: "water_temp",
+            format: d3.format("0.6f"),
+            tooltip: "water_temp",
+        },
+        {
+            key: "water_u",
+            format: d3.format("0.6f"),
+            tooltip: "water_u",
+        },
+        {
+            key: "water_v",
+            format: d3.format("0.6f"),
+            tooltip: "water_v",
+        }
+    ];
+}
+
+
 
 // 画热力图，更换数据集后初次调用
 function printHeatMap(gSelector, projection, data, colorInterp, attr) {
@@ -119,8 +238,8 @@ function printHeatMap(gSelector, projection, data, colorInterp, attr) {
     var exit = update.exit();
 
     update.attr("x", function (d) {
-            return d.x;
-        })
+        return d.x;
+    })
         .attr("y", function (d) {
             return d.y;
         })
@@ -133,7 +252,7 @@ function printHeatMap(gSelector, projection, data, colorInterp, attr) {
             return d.y - yadd;
         })
         .transition() //启动添加元素时的过渡
-        .duration(200) //设定过渡时间
+        .duration(2000) //设定过渡时间
         .style("fill", function (d) {
             return colorInterp(linear(d[attr]));
         });
@@ -154,12 +273,25 @@ function printHeatMap(gSelector, projection, data, colorInterp, attr) {
             return d.y - yadd;
         })
         .on("mouseover", function (d) {
+            console.log(d);
             var width = d3.select(this).attr("width");
             var height = d3.select(this).attr("height");
             d3.select(this).attr({
                 "width": width * 2,
                 "height": height * 2
             }).style("stroke", "black");
+            d3.select(".hmtooltip").html(
+                function () {
+                    var t = "";
+                    for (var k in d) {
+                        t += (k + ": " + d[k].toFixed(2) + "</br>");
+                    }
+                    return t;
+                }
+            )
+                .style("left", (d.x + "px"))
+                .style("top", (d.y + "px"))
+                .style("opacity", 1.0);
             //console.log(projection([d.lon, d.lat]));
         })
         .on("mouseout", function (d) {
@@ -169,28 +301,29 @@ function printHeatMap(gSelector, projection, data, colorInterp, attr) {
                 "width": width / 2,
                 "height": height / 2
             }).style("stroke", "none");
+            d3.select(".hmtooltip").style("opacity", 0.0);
         })
         .transition() //启动添加元素时的过渡
-        .duration(200) //设定过渡时间
+        .duration(2000) //设定过渡时间
         .style("fill", function (d) {
             return colorInterp(linear(d[attr]));
         });
 
-    exit.transition() //启动添加元素时的过渡
-        .duration(100) //设定过渡时间
-        .remove();
+    exit.remove();
 }
 
 // 画热力图，仅改变属性时直接调用
 function changeAttrHeatMap(attr, gSelector, colorInterp, hasColorBarSvg) {
     var linear = linearsWithAttr[attr];
+
     gSelector.selectAll("rect")
-        .transition()
-        .duration(200)
-        .style("fill", function (d) {
-            return colorInterp(linear(d[attr]));
+        .transition() //启动添加元素时的过渡
+        .duration(2000) //设定过渡时间
+        .style("fill", function () {
+            var p = d3.select(this)[0][0].__data__;
+            return colorInterp(linear(p[attr]));
         });
-    if (hasColorBarSvg){
+    if (hasColorBarSvg) {
         printColorBar(hasColorBarSvg, minmaxWithAttr[attr], colorInterp);
     }
 }
@@ -200,7 +333,9 @@ function printColorBar(svgSelector, minmax, colorInterp) {
     // 如果使用能指定配字个数的代码，那么传过来的选择集应该是g
     var min = minmax[0];
     var max = minmax[1];
-    svgSelector.selectAll("g").remove();
+    if (svgSelector.select("g")[0][0] == null) {
+        svgSelector.append("g")
+    }
     gSelector = svgSelector.append("g");
     var colorBarWidth = parseFloat(svgSelector.style("width")) * 0.3;
     var colorBarHeigth = 200; //也意味着共画几个矩形，一个矩形固定高度为1px
@@ -246,6 +381,8 @@ function printColorBar(svgSelector, minmax, colorInterp) {
         .attr("dy", "-0.5em")
         .attr("text-anchor", "start")
         .attr("font-size", "1em")
+        .transition() //启动添加元素时的过渡
+        .duration(1000) //设定过渡时间
         .text(max.toFixed(2));
 
     gSelector.append("text")
@@ -254,6 +391,8 @@ function printColorBar(svgSelector, minmax, colorInterp) {
         .attr("dy", "1em")
         .attr("text-anchor", "start")
         .attr("font-size", "1em")
+        .transition() //启动添加元素时的过渡
+        .duration(1000) //设定过渡时间
         .text(min.toFixed(2));
     /* 以下版本是允许设置配字个数的，使用D3思想
     var num = 3; //配字个数

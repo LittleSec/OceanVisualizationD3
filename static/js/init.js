@@ -92,11 +92,13 @@ $(".two-yAxis-charts").height(
         return h2;
     }
 );
-$(".two-yAxis-charts").children().height(
+$(".two-yAxis-charts").children(".yAxis2").height(
     function () {
-        return $(this).parent().height()/3;
+        return ($(this).parent().height()-80)/3;
     }
 );
+
+
 
 function numToStr(num) {
     return num.toString().replace('.', 'p');
@@ -110,15 +112,15 @@ var svgSelector = d3.select("#heatmap svg")
 var gSelector = svgSelector.append("g");
 var colorInterp = chroma.scale("Spectral").domain([1, 0]).padding(0.1);
 var requestDataInfo = {
-    "attr": "temp",
-    "time": "2007-04-16",
-    "resulation": '0p2',
-    "depth": '5.01m'
+    "time": "2016-05-16",
+    "depth": '0.0m',
+    "attr": "surf_el"
 };
 var projection = drawGeoMap(svgSelector, gSelector);
 var colorbarSvg = d3.select("#colorbar svg"); //or false
 drawHeatMap(gSelector, projection, requestDataInfo, colorInterp, colorbarSvg);
 
+/*
 svgSelector = d3.select(".one-graph svg") // 实际上指选择了第一个
 var twoRequestDataInfo = {
     "resulation": '0p2',
@@ -143,6 +145,7 @@ var attrsRequest = {
 };
 svgSelector = d3.select("#parallel-coordinate svg");
 drawParaller(svgSelector, attrsRequest);
+*/
 
 /* 用svg画时间轴，目前弃用，等待最后确认弃用后删除
 var svg = d3.select("#depthselector svg");
