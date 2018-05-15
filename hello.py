@@ -3,6 +3,8 @@ from flask import jsonify, request, json
 from datetime import timedelta
 import os
 import pandas as pd
+import numpy as np
+from scipy.signal import argrelextrema
 import time
 app = Flask(__name__)
 
@@ -75,6 +77,52 @@ def get_data_1date1depth():
     df = pd.read_csv(fileName)
     return df.to_json(orient='records')
 
+# 计算ow标准偏差
+@app.route('/api/get_ow_std', methods=['POST'])
+def get_std():
+    '''
+    request.json是个dict, 下面是个例子
+    {
+        "time": '2016-01-01'
+    }
+    '''
+    dataInfo = request.json
+    print(dataInfo)
+    fileName = '/'.join([ROOTPATH, 'ow_grid', dataInfo["time"]+'.csv'])
+    csv = np.genfromtxt(fileName, delimiter=',')
+    print(np.nanstd(csv[1:,1:]))
+    return jsonify({"std": np.nanstd(csv[1:,1:])})
+
+# 计算ssh极大极小值
+# 可能会错，因为对nan值的处理未知
+# 可以调整order参数
+@app.route('/api/get_ssh_extrema', methods=['POST'])
+def get_ssh_extrema():
+    '''
+    request.json是个dict, 下面是个例子
+    {
+        "time": '2016-01-01'
+    }
+    '''
+    dataInfo = request.json
+    print(dataInfo)
+    fileName = '/'.join([ROOTPATH, 'surf_el_grid', dataInfo["time"]+'.csv'])
+    csv = np.genfromtxt(fileName, delimiter=',')
+    x = csv[0,1:]
+    y = csv[1:,0]
+    res = {"argrelmax":[], "argrelmin":[]}
+    # 极大值
+    max = argrelextrema(csv[1:,1:], np.greater, order=6) # order是指定要对比多少个值， 返回值是个元组
+    for i in range(len(max[0])):
+        # np.float64无法序列化
+        # 注意哪个是x轴，哪个是y轴
+        res["argrelmax"].append({ "point": [ float(x[max[1][i]]), float(y[max[0][i]]) ] })
+    # 极小值
+    min = argrelextrema(csv[1:,1:], np.less, order=6)
+    for i in range(len(min[0])):
+        res["argrelmin"].append({ "point": [ float(x[min[1][i]]), float(y[min[0][i]]) ] })
+    print(len(max[0]), len(min[0]))
+    return jsonify(res)
 
 @app.route('/api/get_data_heatmap', methods=['POST'])
 def get_data_heatmap():
