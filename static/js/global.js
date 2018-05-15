@@ -11,7 +11,7 @@ var colorbarSvg = d3.select("#colorbar svg");
 var twoYScatterChart = dc.compositeChart("#scatter");
 var parallelChart = d3.select("#parallel");
 var timeTendencyCharts = dc.compositeChart("#time-line-charts");
-var timeRangeChart = dc.lineChart("#time-range-chart");
+var timeRangeChart = dc.lineChart("#time-range-charts");
 var depthTendencyCharts = dc.compositeChart("#depth-line-charts");
 
 // 当前状态
