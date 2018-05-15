@@ -18,6 +18,8 @@ var curdepth = '0.0m',
     curdate = '2014-07-01', 
     curattr = 'water_temp';
 var cur1d1dData, cur1x1yData, curlonlat = [125.76, 22.88];
+var curlonrange = [124.72, 126.48],
+    curlatrange = [22.0, 23.84];
 
 // 系统固定参数
 var dateDomain = [new Date(2014, 6, 1), new Date(2017, 8, 30)]; // 月份从0月开始。。。。

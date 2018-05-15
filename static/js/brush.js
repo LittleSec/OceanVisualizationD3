@@ -20,13 +20,8 @@ function brushed() {
     var pos0 = projection.invert(extent[0]);
     var pos1 = projection.invert(extent[1]);
     // 下面range数组都保证[0]<[1]
-    var rangeLon = [pos0[0], pos1[0]];
-    var rangeLat = [pos1[1], pos0[1]]; // 高纬度在上，低纬度在下
-    //console.log();
-    parachar = getpara();
-    parallelChart.datum(mydata(rangeLon, rangeLat)).call(parachar);
-    nv.addGraph(getpara)
-    //chart1.updata()
-    // console.log(pos0);
-    // console.log(pos1);
+    curlonrange = [pos0[0], pos1[0]];
+    curlatrange = [pos1[1], pos0[1]]; // 高纬度在上，低纬度在下
+    parallelChart.datum(mydata()).call(parachart);
+    // nv.addGraph(parachart);
 }

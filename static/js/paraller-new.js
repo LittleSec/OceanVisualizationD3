@@ -1,66 +1,49 @@
+var parachart = nv.models.parallelCoordinatesChart()
+    .dimensionData(getDimensions())
+    .displayBrush(false)
+    .lineTension(0.85);
 
-function getpara() {
+nv.utils.windowResize(parachart.update);
 
-    var dim = dimensions();
-    chart = nv.models.parallelCoordinatesChart()
-        .dimensionData(dim)
-        .displayBrush(false)
-        .lineTension(0.85);
+parachart.dispatch.on('brushEnd', function (e) {
+    d3.select("#resetBrushButton").style("visibility", "visible");
+});
 
-
-    // var data = mydata([0,0],[0,0]);
-    // parallelChart
-    //     .datum(data)
-    //     .call(chart);
-
-    nv.utils.windowResize(chart.update);
-
-
-    chart.dispatch.on('brushEnd', function (e) {
-        d3.select("#resetBrushButton").style("visibility", "visible");
-    });
-
-
-    chart.dispatch.on('dimensionsOrder', function (e, b) {
-        if (b) {
-            d3.select("#resetSortingButton").style("visibility", "visible");
-        }
-    });
-    console.log(chart);
-
-    return chart;
-}
+parachart.dispatch.on('dimensionsOrder', function (e, b) {
+    if (b) {
+        d3.select("#resetSortingButton").style("visibility", "visible");
+    }
+});
 
 function resetBrush() {
-    chart.filters([]);
-    chart.active([]);
-    chart.displayBrush(true);
+    parachart.filters([]);
+    parachart.active([]);
+    parachart.displayBrush(true);
     d3.select("#resetBrushButton").style("visibility", "hidden");
-    chart.update();
+    parachart.update();
 }
 
 function resetSorting() {
-    var dim = chart.dimensionData();
+    var dim = parachart.dimensionData();
     dim.map(function (d) { return d.currentPosition = d.originalPosition; });
     dim.sort(function (a, b) { return a.originalPosition - b.originalPosition; });
-    chart.dimensionData(dim);
+    parachart.dimensionData(dim);
     d3.select("#resetSortingButton").style("visibility", "hidden");
-    chart.update();
+    parachart.update();
 }
 
-function mydata(rangeLon, rangeLat) {
+function mydata() {
     var data = [];
     for (var i in cur1d1dData) {
-        if (cur1d1dData[i]['lon'] < rangeLon[0] ||
-            cur1d1dData[i]['lon'] > rangeLon[1] ||
-            cur1d1dData[i]['lat'] < rangeLat[0] ||
-            cur1d1dData[i]['lat'] > rangeLat[1]
+        if (cur1d1dData[i]['lon'] < curlonrange[0] ||
+            cur1d1dData[i]['lon'] > curlonrange[1] ||
+            cur1d1dData[i]['lat'] < curlatrange[0] ||
+            cur1d1dData[i]['lat'] > curlatrange[1]
         ) {
             continue;
         }
         data.push({ "values": cur1d1dData[i] })
     }
-    console.log(data);
     return data;
     // return [
     //     {
@@ -77,7 +60,7 @@ function mydata(rangeLon, rangeLat) {
     // ];
 }
 
-function dimensions() {
+function getDimensions() {
     return [
         {
             key: "lon",

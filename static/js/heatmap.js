@@ -96,6 +96,7 @@ function drawHeatMap(dataInfo) {
                 curattr = this.value;
                 changeAttrHeatMap()
             }); 
+            parallelChart.datum(mydata()).call(parachart);
         }
     });
 }

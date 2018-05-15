@@ -48,3 +48,18 @@ rect.extent {
     stroke: black;
     fill: black;
 }
+
+/* 平行坐标图 */
+#resetBrushButton {
+    color: white;
+    visibility: hidden;
+    background: gray;
+    border: 0;
+}
+#resetSortingButton {
+    left: 84px;
+    visibility: hidden;
+    color: white;
+    background: gray;
+    border: 0;
+}
