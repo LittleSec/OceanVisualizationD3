@@ -91,12 +91,16 @@ function drawHeatMap(dataInfo) {
             });
             printHeatMap(data);
             printColorBar();
+
+            parallelChart.datum(mydata()).call(parachart);
+            ndx1d1dData = crossfilter(cur1d1dData);
+            draw2yScatter();
             // 这个监听不能放外面，因为传的是当前的gSelector，是绑定了数据的gSelector
             $('input[type=radio][name=optionsRadios]').change(function () {
                 curattr = this.value;
-                changeAttrHeatMap()
+                changeAttrHeatMap();
+                print2yScatter();
             }); 
-            parallelChart.datum(mydata()).call(parachart);
         }
     });
 }

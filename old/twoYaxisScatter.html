@@ -16,7 +16,8 @@
     </div>
 
     <script>
-        var twoYChart = dc.compositeChart("#two-yaxis-scatter");
+        var twoYScatterChart = dc.compositeChart("#two-yaxis-scatter");
+        // var twoYChart = dc.compositeChart("#two-yaxis-scatter");
         var csvfile = './twoYaxisScatter.csv';
         d3.csv(csvfile, function(err, data){
             var ndx = crossfilter(data);
@@ -32,7 +33,7 @@
             var xLgroup = xLeftdim.group();
             var xRgroup = xRightdim.group();
 
-            twoYChart.width(500)
+            twoYScatterChart.width(500)
                 .height(500)
                 .transitionDuration(1000)
                 .margins({top: 30, right: 50, bottom: 30, left: 50})
@@ -56,7 +57,7 @@
                             .useRightYAxis(true)
                 ])
                 .xAxisLabel('ssh').yAxisLabel('u-ssh').rightYAxisLabel('v-ssh');
-            twoYChart.render();
+            twoYScatterChart.render();
         });
     </script>
 </body>

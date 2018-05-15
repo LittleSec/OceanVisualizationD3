@@ -8,6 +8,7 @@ var hmChartsvg = d3.select("#heatmap svg");
 var hmChartg = hmChartsvg.append("g");
 var quiverChart = hmChartsvg.append("g")
 var colorbarSvg = d3.select("#colorbar svg");
+var twoYScatterChart = dc.compositeChart("#scatter");
 var parallelChart = d3.select("#parallel");
 var timeTendencyCharts = dc.compositeChart("#time-line-charts");
 var timeRangeChart = dc.lineChart("#time-range-chart");
@@ -16,8 +17,10 @@ var depthTendencyCharts = dc.compositeChart("#depth-line-charts");
 // 当前状态
 var curdepth = '0.0m', 
     curdate = '2014-07-01', 
-    curattr = 'water_temp';
-var cur1d1dData, cur1x1yData, curlonlat = [125.76, 22.88];
+    curattr = 'surf_el';
+var cur1d1dData, cur1x1yData, 
+    ndx1d1dData, ndx1x1yData,
+    curlonlat = [125.76, 22.88];
 var curlonrange = [124.72, 126.48],
     curlatrange = [22.0, 23.84];
 
@@ -40,6 +43,9 @@ var projection = d3.geo.mercator()
 var linearsWithAttr = {}; // 存放当前时刻和深度数据中各个属性的值的线性比例尺，用于着色
 var minmaxWithAttr = {}; // 存放各个属性的最大最小值
 
+
+// 双Y轴图参数
+var y2attr1 = 'water_temp', y2attr2 = 'salinity';
 
 var dataInfo = {
     "ssh": {
