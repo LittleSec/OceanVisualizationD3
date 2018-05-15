@@ -1,4 +1,4 @@
-function drawQuiver(svgSelector, projection, dataInfo) {
+function drawQuiver(dataInfo) {
     // dataInfo['time'] = '2014-06-01'
     // dataInfo['depth'] = '0.0m'
     $.ajax({
@@ -16,20 +16,27 @@ function drawQuiver(svgSelector, projection, dataInfo) {
                 e.x2 = loc2[0];
                 e.y2 = loc2[1];
             });
-            printQuiver(svgSelector, data);
+            printQuiver(data);
+            $("input[type=checkbox][value=quiver]").change(function(){
+                if($(this).is(':checked')){
+                    d3.selectAll("line.arrow").style("opacity", 1.0);
+                }else{
+                    d3.selectAll("line.arrow").style("opacity", 0.0);
+                }
+            });
         }
     });
 }
 
-function printQuiver(svgSelector, data) {
+function printQuiver(data) {
     var linear = d3.scale.linear()
         .domain(d3.extent(data, function (d) { return d.scalar; }))
-        .range([0.3, 0.9]); // 线条的宽度，决定了箭头的大小
-    var update = svgSelector.selectAll("line.arrow").data(data);
+        .range([0.5, 0.9]); // 线条的宽度，决定了箭头的大小
+    var update = quiverChart.selectAll("line.arrow").data(data);
     var enter = update.enter();
     var exit = update.exit();
 
-    enter.attr("x1", function (d) { return d.x1; })
+    update.attr("x1", function (d) { return d.x1; })
         .attr("y1", function (d) { return d.y1; })
         .attr("x2", function (d) { return d.x2; })
         .attr("y2", function (d) { return d.y2; })

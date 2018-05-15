@@ -37,7 +37,7 @@
     stroke-opacity: .7;
 }
 
-.brush .extent {
+rect.extent {
     fill-opacity: .3;
     stroke: #fff;
     shape-rendering: crispEdges;
