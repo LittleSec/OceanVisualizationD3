@@ -25,10 +25,10 @@ var curlonrange = [124.72, 126.48],
     curlatrange = [22.0, 23.84];
 
 // 系统固定参数
-var dateDomain = [new Date(2014, 6, 1), new Date(2017, 8, 30)]; // 月份从0月开始。。。。
+var dateDomain = [new Date(2016, 4, 1), new Date(2017, 8, 30)]; // 月份从0月开始。。。。
 var depthDomain = ['0.0m', '8.0m', '15.0m', '30.m', '50.0m'];
-var numberFormat = d3.format(".2f");
-var dateFormat = d3.time.format("%m-%d-%Y");
+var numberFormat = d3.format(".6f");
+var dateFormat = d3.time.format("%Y-%m-%d");
 var resolution = 0.09; // 2/25 + exp，以免有间隙
 
 // 热力图参数
