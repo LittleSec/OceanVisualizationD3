@@ -1,9 +1,11 @@
+/* 地图样式 */
 .geopath {
     fill: slategrey;
     stroke: black;
     stroke-width: 0.5px;
 }
 
+/* 经纬度样式 */
 .latlon {
     fill: none;
     stroke: black;
@@ -37,6 +39,7 @@
     stroke-opacity: .7;
 }
 
+/* 热力图刷子样式 */
 rect.extent {
     fill-opacity: .3;
     stroke: #fff;
@@ -47,6 +50,15 @@ rect.extent {
 .arrow {
     stroke: black;
     fill: black;
+}
+
+/* 热力图提示框样式 */
+.hmtooltip {
+    width: auto;
+    height: auto;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 0.7em;
+    opacity: 0.0;
 }
 
 /* 平行坐标图 */
