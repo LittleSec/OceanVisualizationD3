@@ -10,8 +10,8 @@ var quiverChart = hmChartsvg.append("g")
 var colorbarSvg = d3.select("#colorbar svg");
 var twoYScatterChart = dc.compositeChart("#scatter");
 var parallelChart = d3.select("#parallel");
-var timeTendencyCharts = dc.compositeChart("#time-line-charts");
-var timeRangeChart = dc.lineChart("#time-range-charts");
+var timeTendencyCharts = dc.compositeChart("#time-line-charts", "line-group");
+var timeRangeChart = dc.lineChart("#time-range-charts", "line-group");
 var depthTendencyCharts = dc.compositeChart("#depth-line-charts");
 
 // 当前状态

@@ -75,3 +75,8 @@ rect.extent {
     background: gray;
     border: 0;
 }
+
+/* 折线图样式 */
+#time-range-charts g.y {
+    display: none;
+}

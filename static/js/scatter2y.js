@@ -14,7 +14,7 @@ function draw2yScatter() {
     ndxlatdim = ndx1d1dData.dimension(function(d){
         return +d.lat;
     })
-    twoYScatterChart.margins({ top: 10, right: 30, bottom: 30, left: 30 })
+    twoYScatterChart.margins({ top: 30, right: 30, bottom: 30, left: 30 })
         .shareTitle(false).elasticY(true)
         .legend(dc.legend().x(70).y(10).itemHeight(13).gap(5))
         .brushOn(false).xAxis().ticks(5);
