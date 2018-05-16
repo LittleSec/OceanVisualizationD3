@@ -1,3 +1,17 @@
+laydate.render({
+    elem: "#date-pick",
+    min: "2014-07-01",
+    max: "2017-09-30",
+    value: "2014-07-01",
+    btns: ['confirm'],
+    done: function (value, date, endDate) {
+        changeDate(value);
+        // console.log(value); //得到日期生成的值，如：2017-08-18
+        // console.log(date); //得到日期时间对象：{year: 2017, month: 8, date: 18, hours: 0, minutes: 0, seconds: 0}
+        // console.log(endDate); //得结束的日期时间对象，开启范围选择（range: true）才会返回。对象成员同上。
+    }
+})
+
 var requestDataInfo = {
     "time": "2016-05-16",
     "depth": '0.0m',
@@ -7,7 +21,26 @@ drawGeoMap(hmChartg);
 // var colorbarSvg = d3.select("#colorbar svg"); //or false
 drawHeatMap(requestDataInfo);
 drawQuiver(requestDataInfo);
-hmChartsvg.call(brush);
+hmBrushg.call(brush);
+
+function redrawGroup1() {
+    requestDataInfo = {
+        "time": curdate,
+        "depth": curdepth
+    };
+    drawHeatMap(requestDataInfo);
+    drawQuiver(requestDataInfo);
+}
+
+function changeDate(date) {
+    curdate = date;
+    redrawGroup1();
+}
+
+$("input.depthoption").change(function () {
+    curdepth = this.value;
+    redrawGroup1();
+})
 
 /*
 svgSelector = d3.select(".one-graph svg") // 实际上指选择了第一个

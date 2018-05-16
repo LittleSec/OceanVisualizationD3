@@ -40,7 +40,7 @@
 }
 
 /* 热力图刷子样式 */
-rect.extent {
+.hmbrush rect.extent {
     fill-opacity: .3;
     stroke: #fff;
     shape-rendering: crispEdges;

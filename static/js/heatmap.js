@@ -96,11 +96,18 @@ function drawHeatMap(dataInfo) {
             ndx1d1dData = crossfilter(cur1d1dData);
             draw2yScatter();
             // 这个监听不能放外面，因为传的是当前的gSelector，是绑定了数据的gSelector
-            $('input[type=radio][name=optionsRadios]').change(function () {
+            $('input.attroption').change(function () {
                 curattr = this.value;
                 changeAttrHeatMap();
                 print2yScatter();
             }); 
+            $("input[type=checkbox][value=brush]").change(function(){
+                if($(this).is(':checked')){
+                    $(".hmbrush").css("display", "");
+                }else{
+                    $(".hmbrush").css("display", "none");
+                }
+            });
         }
     });
 }

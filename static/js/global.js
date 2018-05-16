@@ -6,6 +6,7 @@
 // 各图表选择集
 var hmChartsvg = d3.select("#heatmap svg");
 var hmChartg = hmChartsvg.append("g");
+var hmBrushg = hmChartsvg.append("g").attr("class", "hmbrush");
 var quiverChart = hmChartsvg.append("g")
 var colorbarSvg = d3.select("#colorbar svg");
 var twoYScatterChart = dc.compositeChart("#scatter");
