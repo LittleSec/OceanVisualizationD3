@@ -42,6 +42,48 @@ $("input.depthoption").change(function () {
     redrawGroup1();
 })
 
+var sliderwidth = $(".attr-selector").width() * 0.9;
+$('#ow-slider').jRange({
+    from: 0.1,
+    to: 1.0,
+    step: 0.1,
+    scale: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
+    format: '%s',
+    theme: "theme-blue",
+    width: sliderwidth,
+    showLabels: true,
+    snap: true,
+    onstatechange: function(value){
+        console.log(value);
+    }
+});
+$('#ow-slider').jRange('disable');
+$('#ow-slider').jRange('enable');
+
+$('#sla-slider').jRange({
+    from: 3,
+    to: 10,
+    step: 1,
+    scale: [3, 4, 5, 6, 7, 8, 9, 10],
+    format: '%s',
+    width: sliderwidth,
+    theme: "theme-blue",
+    showLabels: true,
+    snap: true
+});
+
+$('#ssh-slider').jRange({
+    from: 40,
+    to: 160,
+    step: 20,
+    scale: [40, 60, 80, 100, 120, 140, 160],
+    format: '%s',
+    theme: "theme-blue",
+    width: sliderwidth,
+    showLabels: true,
+    snap: true
+});
+
 /*
 svgSelector = d3.select(".one-graph svg") // 实际上指选择了第一个
 var twoRequestDataInfo = {

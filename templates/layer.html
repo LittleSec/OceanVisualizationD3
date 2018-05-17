@@ -9,9 +9,11 @@
     <link rel="stylesheet" href="../static/lib/css/keen-dashboards.css" />
     <link rel="stylesheet" href="../static/lib/css/nv.d3.css">
     <link rel="stylesheet" href="../static/lib/css/dc.css">
+    <link rel="stylesheet" href="../static/lib/css/jquery.range.css">
     <link rel="stylesheet" href="../static/css/visual.css" />
     <script src="../static/lib/js/jquery-3.3.1.js" type="text/javascript"></script>
     <script src="../static/lib/laydate-master/src/laydate.js" type="text/javascript"></script>
+    <script src="../static/lib/js/jquery.range.js" type="text/javascript"></script>
     <script src="../static/lib/js/bootstrap.js" type="text/javascript"></script>
     <script src="../static/lib/js/d3.v3.js" type="text/javascript"></script>
     <script src="../static/lib/js/crossfilter.js" type="text/javascript"></script>
@@ -74,10 +76,10 @@
                                             </div>
                                             <div class="radio">
                                                 <label class="radio-inline">
-                                                    <input class="attroption" type="radio" name="optionsRadios" value="sla"> sla
+                                                    <input class="attroption-special" type="radio" name="optionsRadios" value="sla"> sla
                                                 </label>
                                                 <label class="radio-inline">
-                                                    <input class="attroption" type="radio" name="optionsRadios" value="ow"> Okubo-Weiss
+                                                    <input class="attroption-special" type="radio" name="optionsRadios" value="ow"> Okubo-Weiss
                                                 </label>
                                             </div>
                                         </div>
@@ -107,6 +109,27 @@
                                                 <input type="radio" class="depthoption" name="inlineRadioOptions" value="50.0m"> 50.0m
                                             </label>
                                         </div>
+                                    </div>
+                                    <div class="line-spacing col-xs-12 col-sm-12 col-md-12 col-lg-12" style="height: 2em;"></div>
+                                    <div class="ow-threshold col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                                        <label for="">Okubo-Weiss</label>
+                                        <p>Deviation of the ow parameter:&nbsp;</p>
+                                        <p>Multiply a coefficient as a threshold:&nbsp;</p>
+                                        <div id="ow-slider" style="width: 100%;"></div>
+                                    </div>
+                                    <div class="line-spacing col-xs-12 col-sm-12 col-md-12 col-lg-12" style="height: 2em;"></div>
+                                    <div class="line-spacing col-xs-12 col-sm-12 col-md-12 col-lg-12" style="height: 2em;"></div>
+                                    <div class="sla-threshold col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                                        <label for="">SLA</label>
+                                        <p>Set a threshold:&nbsp;<small>(units:&nbsp;cm)</small></p>
+                                        <div id="sla-slider" style="width: 100%;"></div>
+                                    </div>
+                                    <div class="line-spacing col-xs-12 col-sm-12 col-md-12 col-lg-12" style="height: 2em;"></div>
+                                    <div class="line-spacing col-xs-12 col-sm-12 col-md-12 col-lg-12" style="height: 2em;"></div>
+                                    <div class="ssh-extremum col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                                        <label for="">SSH extremum scale</label>
+                                        <p>Set the size of the area for extremum:&nbsp;<small>(units:&nbsp;km)</small></p>
+                                        <div id="ssh-slider" style="width: 100%;"></div>
                                     </div>
                                 </div>
                             </div>

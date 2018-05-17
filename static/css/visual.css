@@ -80,3 +80,9 @@
 #time-range-charts g.y {
     display: none;
 }
+
+/* 滑动条 */
+.slider-container{
+    padding-top: 0.5em;
+    padding-left: 1em;
+}
