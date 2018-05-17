@@ -8,7 +8,7 @@ from scipy.signal import argrelextrema
 import time
 app = Flask(__name__)
 
-app.config['SEND_FILE_MAX_AGE_DEFAULT'] = timedelta(seconds=120)  # 将缓存最大时间设置为1s
+app.config['SEND_FILE_MAX_AGE_DEFAULT'] = timedelta(seconds=1)  # 将缓存最大时间设置为1s
 
 
 @app.route('/')
@@ -57,7 +57,7 @@ def get_data_quiver():
     print(dataInfo)
     fileName = '/'.join([ROOTPATH, 'quiver', dataInfo["depth"], dataInfo["time"]+'.csv'])
     df = pd.read_csv(fileName)
-    return df.to_json(orient='records')
+    return df.round(6).to_json(orient='records')
     # return df.drop(columns=['water_u', 'water_v']).to_json(orient='records')
 
 @app.route('/api/get_data_1date1depth', methods=['POST'])
@@ -75,11 +75,11 @@ def get_data_1date1depth():
         dataInfo["depth"] = '0.0m'
     fileName = '/'.join([ROOTPATH, dataInfo["depth"], dataInfo["time"]+'.csv'])
     df = pd.read_csv(fileName)
-    return df.to_json(orient='records')
+    return df.round(6).to_json(orient='records')
 
-# 计算ow标准偏差
-@app.route('/api/get_ow_std', methods=['POST'])
-def get_std():
+# 获取sla数据，grid-->tuple，并乘100让m转换为cm
+@app.route('/api/get_data_sla', methods=['POST'])
+def get_data_sla():
     '''
     request.json是个dict, 下面是个例子
     {
@@ -88,9 +88,71 @@ def get_std():
     '''
     dataInfo = request.json
     print(dataInfo)
-    fileName = '/'.join([ROOTPATH, 'ow_grid', dataInfo["time"]+'.csv'])
+    fileName = '/'.join([ROOTPATH, 'sla_grid', dataInfo["time"]+'.csv'])
     csv = np.genfromtxt(fileName, delimiter=',')
-    print(np.nanstd(csv[1:,1:]))
+    x, y = np.meshgrid(csv[0, 1:], csv[1:, 0])
+    points = np.rec.fromarrays([x, y]).ravel()
+    values = csv[1:, 1:].ravel()
+    # 去NaN
+    points1 = []
+    values1 = []
+    for i in range(len(values)):
+        if not np.isnan(values[i]):
+            points1.append(list(points[i]))
+            values1.append(values[i] * 100) # m --> cm
+    df1 = pd.DataFrame(points1, columns=['lon', 'lat'])
+    df2 = pd.DataFrame(values1, columns=['sla'])
+    # print(pd.concat([df1, df2], axis=1).round(6))    
+    return pd.concat([df1, df2], axis=1).round(6).to_json(orient='records')
+
+# 获取ow参数，grid-->tuple
+@app.route('/api/get_data_ow', methods=['POST'])
+def get_data_ow():
+    '''
+    request.json是个dict, 下面是个例子
+    {
+        "time": '2016-01-01'
+        (option)"depth": "0.0m"(若缺失则默认0.0m)
+    }
+    '''
+    dataInfo = request.json
+    print(dataInfo)
+    if not "depth" in dataInfo:
+        dataInfo["depth"] = '0.0m'
+    fileName = '/'.join([ROOTPATH, 'ow_grid', dataInfo["depth"], dataInfo["time"]+'.csv'])
+    csv = np.round(np.genfromtxt(fileName, delimiter=','), 6)
+    x, y = np.meshgrid(csv[0, 1:], csv[1:, 0])
+    points = np.rec.fromarrays([x, y]).ravel()
+    values = csv[1:, 1:].ravel()
+    # 去NaN
+    points1 = []
+    values1 = []
+    for i in range(len(values)):
+        if not np.isnan(values[i]):
+            points1.append(list(points[i]))
+            values1.append(values[i] * 100) # m --> cm
+    df1 = pd.DataFrame(points1, columns=['lon', 'lat'])
+    df2 = pd.DataFrame(values1, columns=['ow'])
+    # print(pd.concat([df1, df2], axis=1).round(6))
+    return pd.concat([df1, df2], axis=1).round(6).to_json(orient='records')
+
+# 计算ow标准偏差
+@app.route('/api/get_ow_std', methods=['POST'])
+def get_std():
+    '''
+    request.json是个dict, 下面是个例子
+    {
+        "time": '2016-01-01',
+        (option)"depth": "0.0m"(若缺失则默认0.0m)        
+    }
+    '''
+    dataInfo = request.json
+    print(dataInfo)
+    if not "depth" in dataInfo:
+        dataInfo["depth"] = '0.0m'
+    fileName = '/'.join([ROOTPATH, 'ow_grid', dataInfo["depth"], dataInfo["time"]+'.csv'])
+    csv = np.round(np.genfromtxt(fileName, delimiter=','), 6)
+    print("标准偏差: ", np.nanstd(csv[1:,1:]))
     return jsonify({"std": np.nanstd(csv[1:,1:])})
 
 # 计算ssh极大极小值
@@ -102,26 +164,30 @@ def get_ssh_extrema():
     request.json是个dict, 下面是个例子
     {
         "time": '2016-01-01'
+        "scale" 12
     }
     '''
     dataInfo = request.json
     print(dataInfo)
+    if not "scale" in dataInfo:
+        dataInfo["scale"] = 12 # 12其实就一度了，因为是两边各12，所以就是12*2+1=25恰好一度
+    scale = int(dataInfo["scale"])
     fileName = '/'.join([ROOTPATH, 'surf_el_grid', dataInfo["time"]+'.csv'])
-    csv = np.genfromtxt(fileName, delimiter=',')
+    csv = np.round(np.genfromtxt(fileName, delimiter=','), 6)
     x = csv[0,1:]
     y = csv[1:,0]
     res = {"argrelmax":[], "argrelmin":[]}
     # 极大值
-    max = argrelextrema(csv[1:,1:], np.greater, order=6) # order是指定要对比多少个值， 返回值是个元组
+    max = argrelextrema(csv[1:,1:], np.greater, order=scale) # order是指定要对比多少个值， 返回值是个元组
     for i in range(len(max[0])):
         # np.float64无法序列化
         # 注意哪个是x轴，哪个是y轴
         res["argrelmax"].append({ "point": [ float(x[max[1][i]]), float(y[max[0][i]]) ] })
     # 极小值
-    min = argrelextrema(csv[1:,1:], np.less, order=6)
+    min = argrelextrema(csv[1:,1:], np.less, order=scale)
     for i in range(len(min[0])):
         res["argrelmin"].append({ "point": [ float(x[min[1][i]]), float(y[min[0][i]]) ] })
-    print(len(max[0]), len(min[0]))
+    print("极大值点极小值点的数量: ", len(max[0]), len(min[0]))
     return jsonify(res)
 
 @app.route('/api/get_data_heatmap', methods=['POST'])
@@ -251,6 +317,7 @@ def get_data_bylonlat():
     print(dataInfo)
     queryExpr = 'lon=={0} and lat=={1}'.format(dataInfo['lon'], dataInfo['lat'])
     start = time.clock()
+    res = []
     for depth in DEPTH_LIST:
         absPath = '/'.join([ROOTPATH, depth])
         fileList = os.listdir(absPath)
