@@ -9,6 +9,7 @@ var hmChartg = hmChartsvg.append("g");
 var hmBrushg = hmChartsvg.append("g").attr("class", "hmbrush");
 var quiverChart = hmChartsvg.append("g")
 var colorbarSvg = d3.select("#colorbar svg");
+var cbBrushg = colorbarSvg.append("g").attr("class", "cbbrush");
 var twoYScatterChart = dc.compositeChart("#scatter");
 var parallelChart = d3.select("#parallel");
 var timeTendencyCharts = dc.compositeChart("#time-line-charts", "line-group");
@@ -36,13 +37,15 @@ var resolution = 0.09; // 2/25 + exp，以免有间隙
 var colorInterp = chroma.scale("Spectral").domain([1, 0]).padding(0.1);
 var whm = parseFloat(hmChartsvg.style("width")); //这里不能用+代替，+字符串转数字是针对是字符串全是数字，这里的字符串带有单位
 var hhm = parseFloat(hmChartsvg.style("height"));
-// 定义地图的投影
-var projection = d3.geo.mercator()
+
+var projection = d3.geo.mercator() // 定义地图的投影
     .center([120.275, 22.525]) //必须指定中心，否则无法显示 //[109.475, 131.075], [12.025, 33.025]
     .scale(whm * 2.5)
     .translate([whm / 2, hhm / 2]);
 var linearsWithAttr = {}; // 存放当前时刻和深度数据中各个属性的值的线性比例尺，用于着色
 var minmaxWithAttr = {}; // 存放各个属性的最大最小值
+var colorBarHeigth = 200; //也意味着共画几个矩形，一个矩形固定高度为1px
+
 
 
 // 双Y轴图参数

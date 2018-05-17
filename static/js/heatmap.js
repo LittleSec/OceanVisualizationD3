@@ -211,12 +211,11 @@ function printColorBar() {
     // 如果使用能指定配字个数的代码，那么传过来的选择集应该是g
     var min = minmaxWithAttr[curattr][0];
     var max = minmaxWithAttr[curattr][1];
-    if (colorbarSvg.select("g")[0][0] == null) {
-        colorbarSvg.append("g")
+    if (colorbarSvg.select("g.colorbar")[0][0] == null) {
+        colorbarSvg.append("g").attr("class", "colorbar");
     }
-    gSelector = colorbarSvg.append("g");
+    gSelector = colorbarSvg.select("g.colorbar");
     var colorBarWidth = parseFloat(colorbarSvg.style("width")) * 0.3;
-    var colorBarHeigth = 200; //也意味着共画几个矩形，一个矩形固定高度为1px
     var startX = 0;
     var startY = parseFloat(colorbarSvg.style("height")) - colorBarHeigth - 40; //预留配字，不然碰底了
 
@@ -248,6 +247,15 @@ function printColorBar() {
             return colorInterp(linear(d));
         });
 
+    // var yScale2 = d3.scale.linear()
+    //     .domain(minmaxWithAttr[curattr])
+    //     .range([0, colorBarHeigth])
+        
+    // brushCB.y(yScale2);
+    // cbBrushg.call(brushCB)
+    //     .selectAll("rect").attr("x", 0).attr("y", startY).attr("width", colorBarWidth/2);
+
+    
     exit.remove();
 
     // 配字

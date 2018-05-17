@@ -21,7 +21,7 @@ drawGeoMap(hmChartg);
 // var colorbarSvg = d3.select("#colorbar svg"); //or false
 drawHeatMap(requestDataInfo);
 drawQuiver(requestDataInfo);
-hmBrushg.call(brush);
+hmBrushg.call(brushHM);
 
 function redrawGroup1() {
     requestDataInfo = {
