@@ -64,37 +64,37 @@ function getDimensions() {
     return [
         {
             key: "lon",
-            format: d3.format("0.2f"),
+            format: d3.format("g"),
             tooltip: "lon",
         },
         {
             key: "lat",
-            format: d3.format("0.2f"),
+            format: d3.format("g"),
             tooltip: "lat",
         },
         {
             key: "surf_el",
-            format: d3.format("0.6f"),
+            format: d3.format("g"),
             tooltip: "surf_el",
         },
         {
             key: "salinity",
-            format: d3.format("0.6f"),
+            format: d3.format("g"),
             tooltip: "salinity",
         },
         {
             key: "water_temp",
-            format: d3.format("0.6f"),
+            format: d3.format("g"),
             tooltip: "water_temp",
         },
         {
             key: "water_u",
-            format: d3.format("0.6f"),
+            format: d3.format("g"),
             tooltip: "water_u",
         },
         {
             key: "water_v",
-            format: d3.format("0.6f"),
+            format: d3.format("g"),
             tooltip: "water_v",
         }
     ];

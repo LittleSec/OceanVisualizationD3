@@ -17,7 +17,7 @@ var depthTendencyCharts = dc.compositeChart("#depth-line-charts");
 
 // 当前状态
 var curdepth = '0.0m', 
-    curdate = '2014-07-01', 
+    curdate = '2016-07-01', 
     curattr = 'surf_el';
 var cur1d1dData, cur1x1yData, 
     ndx1d1dData, ndx1x1yData,

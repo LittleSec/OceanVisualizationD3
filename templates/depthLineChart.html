@@ -17,94 +17,178 @@
 </head>
 
 <body>
-    <div id="depth-line-chart">
+    <div id="time-line-charts">
     </div>
-<br/><br/><br/><br/>
-    <div id="volume-chart">
+    <br/>
+    <br/>
+    <br/>
+    <br/>
+    <div id="time-range-charts">
+        <div id="depth-line-charts"></div>
 
     </div>
 
     <script>
-        var moveChart = dc.compositeChart("#depth-line-chart");
-        var volumeChart = dc.lineChart("#volume-chart");
+        var wi = 400;
+        var h1 = 300;
+        var h2 = 100;
+        var timeTendencyCharts = dc.compositeChart("#time-line-charts", "line-group");
+        var timeRangeChart = dc.lineChart("#time-range-charts", "line-group");
+        var depthTendencyCharts = dc.compositeChart("#depth-line-charts");
 
-        d3.csv("./depthLineChart.csv", function (error, data) {
-            var dateFormat = d3.time.format("%m/%d/%Y");
+        var curattr = 'surf_el', y2attr1 = 'water_temp', y2attr2 = 'salinity', y2attr3 = 'water_u';
+        var dateFormat = d3.time.format("%Y-%m-%d");
+        var curdepth = '0.0m', curdate = dateFormat.parse('2016-07-01');
+        var curday = d3.time.day(curdate);
+        var dateDomain = [new Date(2016, 4, 1), new Date(2017, 8, 30)]; // 月份从0月开始。。。。
+
+        d3.json("./lonlat.json", function (error, data) {
+
             var numberFormat = d3.format(".2f");
 
             data.forEach(function (e) {
                 e.dd = dateFormat.parse(e.date);
                 e.day = d3.time.day(e.dd); // pre-calculate month for better performance
+                e.depthnum = parseFloat(e.depth);
             });
 
             var ndx = crossfilter(data);
             // monthly index avg fluctuation in percentage
-            var moveMonths = ndx.dimension(function (d) {
+            var dateDimension = ndx.dimension(function (d) {
                 return d.day;
             });
-            var monthlyMoveGroup = moveMonths.group().reduceSum(function (d) {
-                return +d.close;
+            var depthDimension = ndx.dimension(function (d) {
+                return d.depthnum;
             });
-            var indexAvgByMonthGroup = moveMonths.group().reduceSum(function (d) {
-                return +d.volume;
+            depthDimension.filter(parseFloat(curdepth));
+            var y1group = dateDimension.group().reduceSum(function (d) {
+                return +d[y2attr1];
             });
-
-            moveChart.width(600)
-                .height(300)
+            var y2group = dateDimension.group().reduceSum(function (d) {
+                return +d[y2attr2];
+            });
+            var y3group = dateDimension.group().reduceSum(function (d) {
+                return +d[curattr];
+            });
+            // bug: https://github.com/dc-js/dc.js/issues/667
+            function nonzero_min(chart) {
+                dc.override(chart, 'yAxisMin', function () {
+                    var min = d3.min(chart.data(), function (layer) {
+                        return d3.min(layer.values, function (p) {
+                            return p.y + p.y0;
+                        });
+                    });
+                    return dc.utils.subtract(min, chart.yAxisPadding());
+                });
+                return chart;
+            }
+            timeTendencyCharts.width(wi).height(h1)
                 .transitionDuration(100)
-                .margins({ top: 30, right: 50, bottom: 25, left: 60 })
-                .dimension(moveMonths)
+                .margins({ top: 50, right: 20, bottom: 30, left: 20 })
+                .dimension(dateDimension)
                 .mouseZoomable(true)
                 .shareTitle(false)
-                .x(d3.time.scale().domain([new Date(1985, 0, 1), new Date(2012, 11, 31)]))
+                .x(d3.time.scale().domain(dateDomain))
                 .round(d3.time.day.round)
                 .xUnits(d3.time.days)
                 .elasticY(true)
                 .legend(dc.legend().x(70).y(10).itemHeight(13).gap(5))
                 .brushOn(false)
-                .rangeChart(volumeChart)
+                .rangeChart(timeRangeChart)
                 .compose([
-                    dc.lineChart(moveChart)
-                        .group(indexAvgByMonthGroup, "Monthly Index Average"),
-                    dc.lineChart(moveChart)
-                        .group(monthlyMoveGroup, "Monthly Index Move")
+                    nonzero_min(dc.lineChart(timeTendencyCharts)
+                        .group(y1group, y2attr1)),
+                    nonzero_min(dc.lineChart(timeTendencyCharts)
+                        .group(y2group, y2attr2)
                         .ordinalColors(["orange"])
-                        .useRightYAxis(true)
+                        .useRightYAxis(true))
                 ])
-                .yAxisLabel("Monthly Index Average")
-                .rightYAxisLabel("Monthly Index Move");
-
-            // volumeChart.width(600)
-            //     .height(50)
-            //     .margins({ top: 0, right: 50, bottom: 25, left: 60 })
-            //     .dimension(moveMonths)
-            //     .x(d3.time.scale().domain([new Date(1985, 0, 1), new Date(2012, 11, 31)]))
-            //     .round(d3.time.day.round)
-            //     .xUnits(d3.time.days)
-            //     .compose([
-            //         dc.lineChart(volumeChart)
-            //             .group(indexAvgByMonthGroup),
-            //         dc.lineChart(volumeChart)
-            //             .group(monthlyMoveGroup)
-            //             .ordinalColors(["orange"])
-            //             .useRightYAxis(true)
-            //     ]);
-
-            volumeChart.width(600) /* dc.barChart('#monthly-volume-chart', 'chartGroup'); */
-                .height(40)
-                .margins({ top: 0, right: 50, bottom: 20, left: 60 })
-                .dimension(moveMonths)
-                .group(indexAvgByMonthGroup)
-                .x(d3.time.scale().domain([new Date(1985, 0, 1), new Date(2012, 11, 31)]))
+                .yAxisLabel(y2attr1)
+                .rightYAxisLabel(y2attr2);
+            timeTendencyCharts.xAxis().ticks(10)
+            // timeTendencyCharts.yAxis().tickFormat(numberFormat);
+            timeTendencyCharts.on("renderlet", function (chart) {
+                chart.selectAll("circle.dot").on("click", function (d) {
+                    var da = d.data.key;
+                    console.log(d.data);
+                    dateDimension.filter(da);
+                    depthTendencyCharts.redraw();
+                });
+            });
+            
+            timeRangeChart.width(wi).height(h2)
+                .margins({ top: 10, right: 20, bottom: 20, left: 20 })
+                .dimension(dateDimension)
+                .elasticY(false)
+                .group(y3group, curattr)
+                .x(d3.time.scale().domain(dateDomain))
                 .round(d3.time.month.round)
-                .xUnits(d3.time.months)
-                // .centerBar(true)
-                // .gap(0)
-                // .alwaysUseRounding(true)
-                ;
-            volumeChart.yAxis().ticks(0);
+                .xUnits(d3.time.months);
+            timeRangeChart.yAxis().ticks(0);
 
-            dc.renderAll();
+            dc.renderAll("line-group");
+
+            dateDimension.filter(curday);
+            //console.log(dateDimension2);
+            // date = dateFormat.parse(curdate);
+            var y1group2 = depthDimension.group().reduceSum(function (d) {
+                return +d[y2attr1];
+            });
+            var y2group2 = depthDimension.group().reduceSum(function (d) {
+                return +d[y2attr2];
+            });
+            // 该dc版本的ordinal的x轴不允许显式声明定义域，但是复合图必须指定明确的带有定义域的x轴。
+            // 既然深度本质上也是一个数字，那么可以转化为线性比例尺。
+            depthTendencyCharts.width(wi).height(h1)
+                .transitionDuration(100)
+                .margins({ top: 50, right: 20, bottom: 30, left: 20 })
+                .dimension(depthDimension)
+                .mouseZoomable(false)
+                .shareTitle(false)
+                .x(d3.scale.linear().domain([-5, 55]))
+                .legend(dc.legend().x(70).y(10).itemHeight(13).gap(5))
+                .brushOn(false)
+                .elasticY(true)
+                .compose([
+                    nonzero_min(dc.lineChart(depthTendencyCharts)
+                        .dimension(depthDimension))
+                        .group(y1group2, y2attr1),
+                    nonzero_min(dc.lineChart(depthTendencyCharts)
+                        .dimension(depthDimension)
+                        .group(y2group2, y2attr2)
+                        .ordinalColors(["orange"])
+                        .useRightYAxis(true))
+                ])
+                .yAxisLabel(y2attr1)
+                .rightYAxisLabel(y2attr2);
+            depthTendencyCharts.xAxis()
+                .tickValues([0, 8, 15, 30, 50])
+                .tickFormat(function (d) {
+                    return d.toFixed(1) + 'm';
+                });
+            depthTendencyCharts.on("renderlet", function (chart) {
+                chart.selectAll("circle.dot").on("click", function (d) {
+                    var de = d.data.key;
+                    console.log(d.data);
+                    depthDimension.filter(de);
+                    dc.redrawAll("line-group");
+                });
+            });
+            depthTendencyCharts.render();
+
+            // volumeChart.width(600) /* dc.barChart('#monthly-volume-chart', 'chartGroup'); */
+            //     .height(40)
+            //     .margins({ top: 0, right: 50, bottom: 20, left: 60 })
+            //     .dimension(moveMonths)
+            //     .group(indexAvgByMonthGroup)
+            //     .x(d3.time.scale().domain([new Date(1985, 0, 1), new Date(2012, 11, 31)]))
+            //     .round(d3.time.month.round)
+            //     .xUnits(d3.time.months)
+            //     // .centerBar(true)
+            //     // .gap(0)
+            //     // .alwaysUseRounding(true)
+            //     ;
+            // volumeChart.yAxis().ticks(0);
         });
     </script>
 </body>
