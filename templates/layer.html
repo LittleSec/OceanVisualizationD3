@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>大体布局</title>
     <link rel="stylesheet" href="../static/lib/css//bootstrap.css" />
+    <link rel="stylesheet" href="../static/lib/css/bootstrap-select.css">
     <link rel="stylesheet" href="../static/lib/css/keen-dashboards.css" />
     <link rel="stylesheet" href="../static/lib/css/nv.d3.css">
     <link rel="stylesheet" href="../static/lib/css/dc.css">
@@ -15,6 +16,7 @@
     <script src="../static/lib/laydate-master/src/laydate.js" type="text/javascript"></script>
     <script src="../static/lib/js/jquery.range.js" type="text/javascript"></script>
     <script src="../static/lib/js/bootstrap.js" type="text/javascript"></script>
+    <script src="../static/lib/js/bootstrap-select.js" type="text/javascript"></script>
     <script src="../static/lib/js/d3.v3.js" type="text/javascript"></script>
     <script src="../static/lib/js/crossfilter.js" type="text/javascript"></script>
     <script src="../static/lib/js/chroma.js" type="text/javascript"></script>
@@ -121,14 +123,18 @@
                                     <div class="line-spacing col-xs-12 col-sm-12 col-md-12 col-lg-12" style="height: 2em;"></div>
                                     <div class="sla-threshold col-xs-12 col-sm-12 col-md-12 col-lg-12">
                                         <label for="">SLA</label>
-                                        <p>Set a threshold:&nbsp;<small>(units:&nbsp;cm)</small></p>
+                                        <p>Set a threshold:&nbsp;
+                                            <small>(units:&nbsp;cm)</small>
+                                        </p>
                                         <div id="sla-slider" style="width: 100%;"></div>
                                     </div>
                                     <div class="line-spacing col-xs-12 col-sm-12 col-md-12 col-lg-12" style="height: 2em;"></div>
                                     <div class="line-spacing col-xs-12 col-sm-12 col-md-12 col-lg-12" style="height: 2em;"></div>
                                     <div class="ssh-extremum col-xs-12 col-sm-12 col-md-12 col-lg-12">
                                         <label for="">SSH extremum scale</label>
-                                        <p>Set the size of the area for extremum:&nbsp;<small>(units:&nbsp;km)</small></p>
+                                        <p>Set the size of the area for extremum:&nbsp;
+                                            <small>(units:&nbsp;km)</small>
+                                        </p>
                                         <div id="ssh-slider" style="width: 100%;"></div>
                                     </div>
                                 </div>
@@ -196,12 +202,38 @@
                             correlation analysis
                         </div>
                         <div class="two-yAxis-charts chart-stage" style="overflow-y:auto;">
+                            <div class="y-picker col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                                <div class="row">
+                                    <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4">
+                                        <select class="y1-picker selectpicker" data-style="btn-primary">
+                                            <option value="surf_el">surf_el</option>
+                                            <option value="water_temp">water_temp</option>
+                                            <option value="salinity">salinity</option>
+                                            <option value="water_u">water_u</option>
+                                            <option value="water_v">water_v</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xs-offset-4 col-sm-offset-4 col-md-offset-4 col-lg-offset-4">
+                                        <select class="y2-picker selectpicker" data-style="btn-warning">
+                                            <option value="surf_el">surf_el</option>
+                                            <option value="water_temp">water_temp</option>
+                                            <option value="salinity">salinity</option>
+                                            <option value="water_u">water_u</option>
+                                            <option value="water_v">water_v</option>
+                                        </select>
+                                    </div>
+
+                                </div>
+                            </div>
+                            <h5>scatter with three attributions</h5>
                             <div id="scatter" class="col-xs-12 col-sm-12 col-md-12 col-lg-12 yAxis2" style="padding-left: 0; padding-right: 0;">
                                 <!-- <svg width="100%" , height="100%"></svg> -->
                             </div>
+                            <h5>depth line chart</h5>                            
                             <div id="depth-line-charts" class="col-xs-12 col-sm-12 col-md-12 col-lg-12 yAxis2" style="padding-left: 0; padding-right: 0;">
                                 <!-- <svg width="100%" , height="100%"></svg> -->
                             </div>
+                            <h5>time line chart</h5>                            
                             <div id="time-line-charts" class="col-xs-12 col-sm-12 col-md-12 col-lg-12 yAxis2" style="padding-left: 0; padding-right: 0;">
                                 <!-- <svg width="100%" , height="100%"></svg> -->
                             </div>
