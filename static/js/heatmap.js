@@ -56,6 +56,134 @@ function printLonLat(gSelector, geoPathGenerator, lonlat) {
         .attr("d", geoPathGenerator);
 }
 
+function changeDepthOrDate(dataInfo) {
+    $.ajax({
+        url: "/api/get_data_1date1depth",
+        type: 'POST',
+        data: JSON.stringify(dataInfo), //必须是字符串序列
+        contentType: 'application/json; charset=UTF-8', //必须指明contentType，否则py会当表单处理，很麻烦
+        success: function (data, status) {
+            // csv: [{lon:, lat:, value:}, {}, {}, ...]
+            cur1d1dData = JSON.parse(data);
+            // cur1d1dData = data.slice();
+            var dimensions = d3.keys(cur1d1dData[0]);
+            for (var i = 0; i < dimensions.length; i++) {
+                if (dimensions[i] in ['lon', 'lat']) {
+                    continue;
+                }
+                var minmax = d3.extent(cur1d1dData, function (d) {
+                    return +d[dimensions[i]];
+                });
+                minmaxWithAttr[dimensions[i]] = minmax;
+                linearsWithAttr[dimensions[i]] = d3.scale.linear()
+                    .domain(minmax)
+                    .range([0, 1]);
+            }
+            cur1d1dData.forEach(function (d) {
+                var xy = projection([d.lon, d.lat]);
+                d.x = xy[0];
+                d.y = xy[1];
+            });
+        }
+    });
+    $.ajax({
+        url: "/api/get_data_sla",
+        type: 'POST',
+        data: JSON.stringify(dataInfo), //必须是字符串序列
+        contentType: 'application/json; charset=UTF-8', //必须指明contentType，否则py会当表单处理，很麻烦
+        success: function (data, status) {
+            // csv: [{lon:, lat:, sla:}, {}, {}, ...]
+            curSLAdata = JSON.parse(data);
+            var minmax = d3.extent(curSLAdata, function (d) {
+                return +d['sla'];
+            });
+            minmaxWithAttr['sla'] = minmax;
+            linearsWithAttr['sla'] = d3.scale.linear()
+                .domain(minmax)
+                .range([0, 1]);
+            curSLAdata.forEach(function (d) {
+                var xy = projection([d.lon, d.lat]);
+                d.x = xy[0];
+                d.y = xy[1];
+            });
+        }
+    });
+    $.ajax({
+        url: "/api/get_data_ow",
+        type: 'POST',
+        data: JSON.stringify(dataInfo), //必须是字符串序列
+        contentType: 'application/json; charset=UTF-8', //必须指明contentType，否则py会当表单处理，很麻烦
+        success: function (data, status) {
+            // csv: [{lon:, lat:, ow:}, {}, {}, ...]
+            curOWdata = JSON.parse(data);
+            var minmax = d3.extent(curOWdata, function (d) {
+                return +d['ow'];
+            });
+            minmaxWithAttr['ow'] = minmax;
+            linearsWithAttr['ow'] = d3.scale.linear()
+                .domain(minmax)
+                .range([0, 1]);
+            curOWdata.forEach(function (d) {
+                var xy = projection([d.lon, d.lat]);
+                d.x = xy[0];
+                d.y = xy[1];
+            });
+        }
+    });
+    $.ajax({
+        url: "/api/get_data_ow_std",
+        type: 'POST',
+        data: JSON.stringify(dataInfo), //必须是字符串序列
+        contentType: 'application/json; charset=UTF-8', //必须指明contentType，否则py会当表单处理，很麻烦
+        success: function (data, status) {
+            // csv: [{lon:, lat:, ow:}, {}, {}, ...]
+            curOWstd = JSON.parse(data);
+            minmaxWithAttr['ow'] = [-curOWstd, curOWstd];
+            linearsOW[0].domain([curOWstd, curOWstd * curOWcoef]);
+            linearsOW[1].domain([-curOWstd * curOWcoef, -curOWstd]);
+        }
+    });
+}
+
+function redrawAfterChange1d1d(){
+    if (curattr == 'sla') {
+        printHeatMap(curSLAdata);
+    }
+    else if (curattr == 'ow') {
+        printOWHeatMap(curOWdata);
+    }
+    else {
+        printHeatMap(cur1d1dData);
+    }
+    printColorBar();
+
+    parallelChart.datum(mydata()).call(parachart);
+    ndx1d1dData = crossfilter(cur1d1dData);
+    draw2yScatter();
+    // 这个监听不能放外面，因为传的是当前的gSelector，是绑定了数据的gSelector
+    $('input.attroption').change(function () {
+        curattr = this.value;
+        printHeatMap(cur1d1dData)
+        print2yScatter();
+    });
+    $('input.attroption-special').change(function () {
+        curattr = this.value;
+        if (curattr == 'sla') {
+            printHeatMap(curSLAdata);
+        }
+        else {
+            printHeatMap(curOWdata);
+        }
+    })
+    $("input[type=checkbox][value=brush]").change(function () {
+        if ($(this).is(':checked')) {
+            $(".hmbrush").css("display", "");
+        } else {
+            $(".hmbrush").css("display", "none");
+        }
+    });
+}
+
 // todo: 后期在前端确认文件里无NaN值
 function drawHeatMap(dataInfo) {
     // hasColorBar要么false，要么是个svg选择集
@@ -73,7 +201,7 @@ function drawHeatMap(dataInfo) {
             cur1d1dData = data.slice();
             var dimensions = d3.keys(data[0]);
             for (var i = 0; i < dimensions.length; i++) {
-                if(dimensions[i] in ['lon', 'lat']){
+                if (dimensions[i] in ['lon', 'lat']) {
                     continue;
                 }
                 var minmax = d3.extent(data, function (d) {
@@ -89,7 +217,16 @@ function drawHeatMap(dataInfo) {
                 d.x = xy[0];
                 d.y = xy[1];
             });
-            printHeatMap(data);
+            if (curattr == 'sla') {
+                printHeatMap(curSLAdata);
+            }
+            else if (curattr == 'ow') {
+                printHeatMap(curOWdata);
+            }
+            else {
+                printHeatMap(cur1d1dData);
+            }
+
             printColorBar();
 
             parallelChart.datum(mydata()).call(parachart);
@@ -98,13 +235,22 @@ function drawHeatMap(dataInfo) {
             // 这个监听不能放外面，因为传的是当前的gSelector，是绑定了数据的gSelector
             $('input.attroption').change(function () {
                 curattr = this.value;
-                changeAttrHeatMap();
+                printHeatMap(cur1d1dData)
                 print2yScatter();
-            }); 
-            $("input[type=checkbox][value=brush]").change(function(){
-                if($(this).is(':checked')){
+            });
+            $('input.attroption-special').change(function () {
+                curattr = this.value;
+                if (curattr == 'sla') {
+                    printHeatMap(curSLAdata);
+                }
+                else {
+                    printHeatMap(curOWdata);
+                }
+            })
+            $("input[type=checkbox][value=brush]").change(function () {
+                if ($(this).is(':checked')) {
                     $(".hmbrush").css("display", "");
-                }else{
+                } else {
                     $(".hmbrush").css("display", "none");
                 }
             });
@@ -155,19 +301,31 @@ function printHeatMap(data) {
             return d.y - yadd;
         })
         .attr("class", "hm")
+        .transition() //启动添加元素时的过渡
+        .duration(2000) //设定过渡时间
+        .style("fill", function (d) {
+            return colorInterp(linear(d[curattr]));
+        });
+
+    exit.remove();
+}
+
+// 绑定数据是cur1d1dData才能调用！！
+function addTooltip() {
+    hmChartg.selectAll("rect.hm")
         .on("mouseenter", function (d) {
             d3.select(this)
                 .style("transform", "scale(3,3)")
                 .style("stroke", "black")
-                .style("stroke-width","2px");
+                .style("stroke-width", "2px");
             d3.select(".hmtooltip").html(
                 function () {
                     var t = "";
                     for (var k in d) {
-                        if(k == 'x' || k == 'y'){
+                        if (k == 'x' || k == 'y') {
                             continue;
                         }
-                        t += (k + ": " + d[k].toFixed(2) + "</br>");
+                        t += (k + ": " + dateFormat(d[k]) + "</br>");
                     }
                     return t;
                 }
@@ -178,11 +336,85 @@ function printHeatMap(data) {
         .on("mouseleave", function (d) {
             d3.select(this).style("transform", "scale(1, 1)").style("stroke", "none");
             // d3.select(".hmtooltip").style("opacity", 0.0);
+        });
+}
+
+// 画ow热力图，主要是线性尺的不同
+function printOWHeatMap(data) {
+    var update = hmChartg.selectAll("rect.hm").data(data);
+    var enter = update.enter();
+    var exit = update.exit();
+
+    update.attr("x", function (d) {
+        return d.x;
+    })
+        .attr("y", function (d) {
+            return d.y;
+        })
+        .attr("width", function (d) {
+            var xadd = projection([d.lon + resolution, d.lat])[0];
+            return xadd - d.x;
+        })
+        .attr("height", function (d) {
+            var yadd = projection([d.lon, d.lat + resolution])[1];
+            return d.y - yadd;
         })
         .transition() //启动添加元素时的过渡
         .duration(2000) //设定过渡时间
         .style("fill", function (d) {
-            return colorInterp(linear(d[curattr]));
+            var threshold = curOWstd * curOWcoef;
+            if (d[curattr] <= -curOWstd) {
+                return colorInterp(1);
+            }
+            else if (-curOWstd < d[curattr] && d[curattr] <= -threshold) {
+                return colorInterp(linearsOW[1](d[curattr]));
+            }
+            else if (-threshold < d[curattr] && d[curattr] <= threshold) {
+                return colorInterp(0.5);
+            }
+            else if (threshold < d[curattr] && d[curattr] <= curOWstd) {
+                return colorInterp(linearsOW[0](d[curattr]));
+            }
+            else {
+                return colorInterp(0);
+            }
+        });
+
+    enter.append("rect")
+        .attr("x", function (d) {
+            return d.x;
+        })
+        .attr("y", function (d) {
+            return d.y;
+        })
+        .attr("width", function (d) {
+            var xadd = projection([d.lon + resolution, d.lat])[0];
+            return xadd - d.x;
+        })
+        .attr("height", function (d) {
+            var yadd = projection([d.lon, d.lat + resolution])[1];
+            return d.y - yadd;
+        })
+        .attr("class", "hm")
+        .transition() //启动添加元素时的过渡
+        .duration(2000) //设定过渡时间
+        .style("fill", function (d) {
+            var threshold = curOWstd * curOWcoef;
+            if (d[curattr] <= -curOWstd) {
+                return colorInterp(1);
+            }
+            else if (-curOWstd < d[curattr] && d[curattr] <= -threshold) {
+                return colorInterp(linearsOW[1](d[curattr]));
+            }
+            else if (-threshold < d[curattr] && d[curattr] <= threshold) {
+                return colorInterp(0.5);
+            }
+            else if (threshold < d[curattr] && d[curattr] <= curOWstd) {
+                return colorInterp(linearsOW[0](d[curattr]));
+            }
+            else {
+                return colorInterp(0);
+            }
         });
 
     exit.remove();
@@ -202,7 +434,7 @@ function changeAttrHeatMap() {
     printColorBar();
 }
 
-colorbarSvg.on("click", function(){
+colorbarSvg.on("click", function () {
     d3.select(".hmtooltip").style("opacity", 0.0);
 })
 
@@ -250,12 +482,12 @@ function printColorBar() {
     // var yScale2 = d3.scale.linear()
     //     .domain(minmaxWithAttr[curattr])
     //     .range([0, colorBarHeigth])
-        
+
     // brushCB.y(yScale2);
     // cbBrushg.call(brushCB)
     //     .selectAll("rect").attr("x", 0).attr("y", startY).attr("width", colorBarWidth/2);
 
-    
+
     exit.remove();
 
     // 配字

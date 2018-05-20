@@ -8,10 +8,10 @@ var ndxlondim, ndxlatdim;
 
 function draw2yScatter() {
     ndx1d1dData = crossfilter(cur1d1dData);
-    ndxlondim = ndx1d1dData.dimension(function(d){
+    ndxlondim = ndx1d1dData.dimension(function (d) {
         return +d.lon;
     });
-    ndxlatdim = ndx1d1dData.dimension(function(d){
+    ndxlatdim = ndx1d1dData.dimension(function (d) {
         return +d.lat;
     })
     twoYScatterChart.margins({ top: 30, right: 30, bottom: 30, left: 30 })
@@ -44,13 +44,19 @@ function print2yScatter() {
             dc.scatterPlot(twoYScatterChart)
                 .dimension(xLeftdim)
                 .group(xLgroup, xllabel) //字符串是用来设置图标的
-                .nonemptyOpacity(0.1),
+                .nonemptyOpacity(0.1)
+                .title(function (d) {
+                    return [curattr + ': ' + d[0], y2attr1 + ': ' + d[1]].join('\n');
+                }),
             dc.scatterPlot(twoYScatterChart)
                 .dimension(xRightdim)
                 .group(xRgroup, xrlabel)
                 .nonemptyOpacity(0.1)
                 .ordinalColors(["orange"])
                 .useRightYAxis(true)
+                .title(function (d) {
+                    return [curattr + ': ' + d[0], y2attr2 + ': ' + d[1]].join('\n');
+                })
         ])
         .xAxisLabel(curattr).yAxisLabel(y2attr1).rightYAxisLabel(y2attr2);
     twoYScatterChart.render();

@@ -43,7 +43,7 @@ d3.json('./static/js/lonlat.json', function (err, data) {
 
     timeTendencyCharts.width(wi).height(h1)
         .transitionDuration(100)
-        .margins({ top: 50, right: 20, bottom: 30, left: 20 })
+        .margins({ top: 50, right: 30, bottom: 30, left: 20 })
         .dimension(dateDimension)
         .mouseZoomable(true)
         .shareTitle(false)
@@ -56,11 +56,17 @@ d3.json('./static/js/lonlat.json', function (err, data) {
         .rangeChart(timeRangeChart)
         .compose([
             nonzero_min(dc.lineChart(timeTendencyCharts)
-                .group(y1group, y2attr1)),
+                .group(y1group, y2attr1))
+                .title(function (d) {
+                    return ['date: ' + dateFormat(d.key), y2attr1 + ': ' + numberFormat(d.value)].join('\n');
+                }),
             nonzero_min(dc.lineChart(timeTendencyCharts)
                 .group(y2group, y2attr2)
                 .ordinalColors(["orange"])
                 .useRightYAxis(true))
+                .title(function (d) {
+                    return ['date: ' + dateFormat(d.key), y2attr2 + ': ' + numberFormat(d.value)].join('\n');
+                })
         ])
         .yAxisLabel(y2attr1)
         .rightYAxisLabel(y2attr2);
@@ -76,7 +82,7 @@ d3.json('./static/js/lonlat.json', function (err, data) {
     // timeTendencyCharts.yAxis().tickFormat(numberFormat);
 
     timeRangeChart.width(wi).height(h2)
-        .margins({ top: 10, right: 20, bottom: 20, left: 20 })
+        .margins({ top: 10, right: 30, bottom: 20, left: 20 })
         .dimension(dateDimension)
         .elasticY(false)
         .group(y3group)
@@ -99,7 +105,7 @@ d3.json('./static/js/lonlat.json', function (err, data) {
     // 既然深度本质上也是一个数字，那么可以转化为线性比例尺。
     depthTendencyCharts.width(wi).height(h1)
         .transitionDuration(100)
-        .margins({ top: 50, right: 20, bottom: 30, left: 20 })
+        .margins({ top: 50, right: 30, bottom: 30, left: 20 })
         .dimension(depthDimension)
         .mouseZoomable(false)
         .shareTitle(false)
@@ -110,12 +116,18 @@ d3.json('./static/js/lonlat.json', function (err, data) {
         .compose([
             nonzero_min(dc.lineChart(depthTendencyCharts)
                 .dimension(depthDimension)
-                .group(y1group2, y2attr1)),
+                .group(y1group2, y2attr1))
+                .title(function (d) {
+                    return ['depth: ' + d.key + 'm', y2attr1 + ': ' + numberFormat(d.value)].join('\n');
+                }),
             nonzero_min(dc.lineChart(depthTendencyCharts)
                 .dimension(depthDimension)
                 .group(y2group2, y2attr2)
                 .ordinalColors(["orange"])
                 .useRightYAxis(true))
+                .title(function (d) {
+                    return ['depth: ' + d.key + 'm', y2attr2 + ': ' + numberFormat(d.value)].join('\n');
+                })
         ])
         .yAxisLabel(y2attr1)
         .rightYAxisLabel(y2attr2);

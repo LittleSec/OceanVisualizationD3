@@ -25,11 +25,12 @@ var cur1d1dData, cur1x1yData,
     curlonlat = [125.76, 22.88];
 var curlonrange = [124.72, 126.48],
     curlatrange = [22.0, 23.84];
+var curSLAdata, curOWdata, curOWstd, curOWcoef = 0.1;
 
 // 系统固定参数
-var dateDomain = [new Date(2016, 4, 1), new Date(2017, 8, 30)]; // 月份从0月开始。。。。
+var dateDomain = [new Date(2014, 6, 1), new Date(2017, 8, 30)]; // 月份从0月开始。。。。
 var depthDomain = ['0.0m', '8.0m', '15.0m', '30.m', '50.0m'];
-var numberFormat = d3.format(".6f");
+var numberFormat = d3.format(".2f");
 var dateFormat = d3.time.format("%Y-%m-%d");
 var resolution = 0.09; // 2/25 + exp，以免有间隙
 
@@ -45,6 +46,7 @@ var projection = d3.geo.mercator() // 定义地图的投影
 var linearsWithAttr = {}; // 存放当前时刻和深度数据中各个属性的值的线性比例尺，用于着色
 var minmaxWithAttr = {}; // 存放各个属性的最大最小值
 var colorBarHeigth = 200; //也意味着共画几个矩形，一个矩形固定高度为1px
+var linearsOW = [d3.scale.linear().range([0, 0.5]), d3.scale.linear().range([0.5, 1])]; // ow专属线性尺（们）
 
 
 

@@ -50,9 +50,12 @@ $(".two-yAxis-charts").height(
 );
 $(".two-yAxis-charts").children(".yAxis2").height(
     function () {
-        return ($(this).parent().height()-80)/3;
+        return ($(this).width()*0.8);
     }
 );
+$("#scatter").height(function(){
+    return $(this).width();
+})
 
 function numToStr(num) {
     return num.toString().replace('.', 'p');
