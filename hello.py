@@ -116,7 +116,7 @@ def get_data_ow():
     }
     '''
     dataInfo = request.json
-    print(dataInfo)
+    print('now is get_data_ow: ' + str(dataInfo))
     if not "depth" in dataInfo:
         dataInfo["depth"] = '0.0m'
     fileName = '/'.join([ROOTPATH, 'ow_grid', dataInfo["depth"], dataInfo["time"]+'.csv'])
@@ -164,13 +164,13 @@ def get_ssh_extrema():
     request.json是个dict, 下面是个例子
     {
         "time": '2016-01-01'
-        "scale" 12
+        "scale": 12
     }
     '''
     dataInfo = request.json
     print(dataInfo)
     if not "scale" in dataInfo:
-        dataInfo["scale"] = 12 # 12其实就一度了，因为是两边各12，所以就是12*2+1=25恰好一度
+        dataInfo["scale"] = 12 # 12其实就两度了，因为是两边各12，所以就是12*2+1=25恰好两度
     scale = int(dataInfo["scale"])
     fileName = '/'.join([ROOTPATH, 'surf_el_grid', dataInfo["time"]+'.csv'])
     csv = np.round(np.genfromtxt(fileName, delimiter=','), 6)
@@ -178,16 +178,25 @@ def get_ssh_extrema():
     y = csv[1:,0]
     res = {"argrelmax":[], "argrelmin":[]}
     # 极大值
-    max = argrelextrema(csv[1:,1:], np.greater, order=scale) # order是指定要对比多少个值， 返回值是个元组
-    for i in range(len(max[0])):
-        # np.float64无法序列化
-        # 注意哪个是x轴，哪个是y轴
-        res["argrelmax"].append({ "point": [ float(x[max[1][i]]), float(y[max[0][i]]) ] })
+    max1 = argrelextrema(csv[1:,1:], axis=0, comparator=np.greater, order=scale) # order是指定要对比多少个值， 返回值是个元组
+    max2 = argrelextrema(csv[1:,1:], axis=1, comparator=np.greater, order=scale)
+    for i in range(len(max1[0])):
+        for j in range(len(max2[0])):
+            if max1[0][i] == max2[0][j] and max1[1][i] == max2[1][j]:
+                res["argrelmax"].append({ "point": [ float(x[max1[1][i]]), float(y[max1[0][i]]) ] })
+                break
+    # for i in range(len(max1[0])):
+    #     # np.float64无法序列化
+    #     # 注意哪个是x轴，哪个是y轴
+    #     res["argrelmax"].append({ "point": [ float(x[max1[1][i]]), float(y[max1[0][i]]) ] })
+    # for i in range(len(max2[0])):
+    #     res["argrelmin"].append({ "point": [ float(x[max2[1][i]]), float(y[max2[0][i]]) ] })
+        
     # 极小值
-    min = argrelextrema(csv[1:,1:], np.less, order=scale)
-    for i in range(len(min[0])):
-        res["argrelmin"].append({ "point": [ float(x[min[1][i]]), float(y[min[0][i]]) ] })
-    print("极大值点极小值点的数量: ", len(max[0]), len(min[0]))
+    # min = argrelextrema(csv[1:,1:], axis=1, comparator=np.less, order=scale)
+    # for i in range(len(min[0])):
+    #     res["argrelmin"].append({ "point": [ float(x[min[1][i]]), float(y[min[0][i]]) ] })
+    # print("极大值点极小值点的数量: ", len(max[0]), len(min[0]))
     return jsonify(res)
 
 @app.route('/api/get_data_heatmap', methods=['POST'])
@@ -304,6 +313,9 @@ def get_data_paraller():
     print(df2)
     return df2.drop(columns=['lon', 'lat']).to_json(orient='records')
 
+def floatToStr(num):
+    return str(num).replace('.', 'p')
+
 @app.route('/api/get_data_bylonlat', methods=['POST'])
 def get_data_bylonlat():
     '''
@@ -314,23 +326,32 @@ def get_data_bylonlat():
     }
     '''
     dataInfo = request.json
-    print(dataInfo)
-    queryExpr = 'lon=={0} and lat=={1}'.format(dataInfo['lon'], dataInfo['lat'])
-    start = time.clock()
-    res = []
-    for depth in DEPTH_LIST:
-        absPath = '/'.join([ROOTPATH, depth])
-        fileList = os.listdir(absPath)
-        for file in fileList:
-            dict1 = {}
-            df1 = pd.read_csv('/'.join([absPath, file])).round(6)
-            qdf = df1.query(queryExpr).drop(columns=['lon', 'lat'])
-            dict1 = qdf.to_dict('record')
-            dict1[0]['date'] = file[:-4]
-            dict1[0]['depth'] = depth
-            res.append(dict1[0])
-        print("run time: "+str(time.clock()-start)+" s")
-    return jsonify(res)
+    print('now is get_data_bylonlat: ' + str(dataInfo))
+    tarPath = '/'.join([ROOTPATH, floatToStr(dataInfo['lon'])])
+    tarFile = '/'.join([tarPath, floatToStr(dataInfo['lat'])+'.csv'])
+    if os.path.isfile(tarFile):
+        return pd.read_csv(tarFile).round(6).to_json(orient='records')
+    else:
+        queryExpr = 'lon=={0} and lat=={1}'.format(dataInfo['lon'], dataInfo['lat'])
+        start = time.clock()
+        res = []
+        for depth in DEPTH_LIST:
+            absPath = '/'.join([ROOTPATH, depth])
+            fileList = os.listdir(absPath)
+            for file in fileList:
+                dict1 = {}
+                df1 = pd.read_csv('/'.join([absPath, file])).round(6)
+                qdf = df1.query(queryExpr).drop(columns=['lon', 'lat'])
+                dict1 = qdf.to_dict('record')
+                dict1[0]['date'] = file[:-4]
+                dict1[0]['depth'] = depth
+                res.append(dict1[0])
+            print("run time: "+str(time.clock()-start)+" s")
+        if not os.path.exists(tarPath):
+            os.makedirs(tarPath)
+        df1 = pd.DataFrame.from_records(res)
+        df1.to_csv(tarFile, index=False)
+        return df1.to_json(orient='records')
 
 if __name__ == '__main__':
     app.run(debug=True, port=8000)

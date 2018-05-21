@@ -86,3 +86,17 @@
     padding-top: 0.5em;
     padding-left: 1em;
 }
+
+/* 冷涡 */
+.cold-eddy{
+    stroke: blue;
+    stroke-width: 1px;
+    fill: none;
+}
+
+/* 暖涡 */
+.warm-eddy{
+    stroke: red;
+    stroke-width: 1px;
+    fill: none;
+}
