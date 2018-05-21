@@ -1,3 +1,8 @@
+/* 依赖:
+ * 1. linechart2yaxis.js
+ * 
+ */
+
 /* 这是flask与ajax的示例模板
 var data = {
         "name": "hjx",
@@ -57,6 +62,8 @@ function printLonLat(gSelector, geoPathGenerator, lonlat) {
 }
 
 function changeDepthOrDate(dataInfo) {
+    // 获取正常属性并绘图，设置各全局变量，平行坐标图和散点图是无论是否选中都要更换的
+    drawQuiver(dataInfo);
     $.ajax({
         url: "/api/get_data_1date1depth",
         type: 'POST',
@@ -84,8 +91,27 @@ function changeDepthOrDate(dataInfo) {
                 d.x = xy[0];
                 d.y = xy[1];
             });
+            if (!(curattr in ['ow', 'sla'])) {
+                printHeatMap(cur1d1dData);
+                addTooltip();
+                printColorBar();
+            }
+            // 以下图是即使不是选中常规属性，也是要更换的图
+            parallelChart.datum(mydata()).call(parachart);
+            ndx1d1dData = crossfilter(cur1d1dData);
+            draw2yScatter();
+            // 这个监听不能放外面，因为传的是当前的gSelector，是绑定了数据的gSelector
+            $('input.attroption').change(function () {
+                // 这个option的值肯定不会是ow或sla，因此不需要合理性判断
+                curattr = this.value;
+                printHeatMap(cur1d1dData);
+                printColorBar();
+                print2yScatter();
+                changeTimeRangeChart();
+            });
         }
     });
+    // 获取sla数据并绘图
     $.ajax({
         url: "/api/get_data_sla",
         type: 'POST',
@@ -106,8 +132,39 @@ function changeDepthOrDate(dataInfo) {
                 d.x = xy[0];
                 d.y = xy[1];
             });
+            if (curattr == 'sla') {
+                printHeatMap(curSLAdata);
+                printColorBar();
+            }
+            $('input.attroption-special').change(function () {
+                curattr = this.value;
+                if (curattr == 'sla') {
+                    printHeatMap(curSLAdata);
+                }
+                else {
+                    printOWHeatMap(curOWdata);
+                }
+                printColorBar();
+            });
         }
     });
+    // 获取ow的标准差，设置对应的线性比例尺（们）
+    $.ajax({
+        url: "/api/get_ow_std",
+        type: 'POST',
+        data: JSON.stringify(dataInfo), //必须是字符串序列
+        contentType: 'application/json; charset=UTF-8', //必须指明contentType，否则py会当表单处理，很麻烦
+        success: function (data, status) {
+            // data: {std: value}
+            // var respond = JSON.parse(data);
+            curOWstd = data['std'];
+            minmaxWithAttr['ow'] = [-curOWstd, curOWstd];
+            linearsOW[0].domain([curOWstd, curOWstd * curOWcoef]);
+            linearsOW[1].domain([-curOWstd * curOWcoef, -curOWstd]);
+        }
+    });
+    // 获取ow数据并绘图，一般来说标准差比ow数据早到达前段。
+    // 所以其实并没有代码去判断ow的标准差是否更新
     $.ajax({
         url: "/api/get_data_ow",
         type: 'POST',
@@ -116,146 +173,28 @@ function changeDepthOrDate(dataInfo) {
         success: function (data, status) {
             // csv: [{lon:, lat:, ow:}, {}, {}, ...]
             curOWdata = JSON.parse(data);
-            var minmax = d3.extent(curOWdata, function (d) {
-                return +d['ow'];
-            });
-            minmaxWithAttr['ow'] = minmax;
-            linearsWithAttr['ow'] = d3.scale.linear()
-                .domain(minmax)
-                .range([0, 1]);
             curOWdata.forEach(function (d) {
                 var xy = projection([d.lon, d.lat]);
                 d.x = xy[0];
                 d.y = xy[1];
             });
-        }
-    });
-    $.ajax({
-        url: "/api/get_data_ow_std",
-        type: 'POST',
-        data: JSON.stringify(dataInfo), //必须是字符串序列
-        contentType: 'application/json; charset=UTF-8', //必须指明contentType，否则py会当表单处理，很麻烦
-        success: function (data, status) {
-            // csv: [{lon:, lat:, ow:}, {}, {}, ...]
-            curOWstd = JSON.parse(data);
-            minmaxWithAttr['ow'] = [-curOWstd, curOWstd];
-            linearsOW[0].domain([curOWstd, curOWstd * curOWcoef]);
-            linearsOW[1].domain([-curOWstd * curOWcoef, -curOWstd]);
-        }
-    });
-}
-
-function redrawAfterChange1d1d(){
-    if (curattr == 'sla') {
-        printHeatMap(curSLAdata);
-    }
-    else if (curattr == 'ow') {
-        printOWHeatMap(curOWdata);
-    }
-    else {
-        printHeatMap(cur1d1dData);
-    }
-    printColorBar();
-
-    parallelChart.datum(mydata()).call(parachart);
-    ndx1d1dData = crossfilter(cur1d1dData);
-    draw2yScatter();
-    // 这个监听不能放外面，因为传的是当前的gSelector，是绑定了数据的gSelector
-    $('input.attroption').change(function () {
-        curattr = this.value;
-        printHeatMap(cur1d1dData)
-        print2yScatter();
-    });
-    $('input.attroption-special').change(function () {
-        curattr = this.value;
-        if (curattr == 'sla') {
-            printHeatMap(curSLAdata);
-        }
-        else {
-            printHeatMap(curOWdata);
-        }
-    })
-    $("input[type=checkbox][value=brush]").change(function () {
-        if ($(this).is(':checked')) {
-            $(".hmbrush").css("display", "");
-        } else {
-            $(".hmbrush").css("display", "none");
-        }
-    });
-}
-
-// todo: 后期在前端确认文件里无NaN值
-function drawHeatMap(dataInfo) {
-    // hasColorBar要么false，要么是个svg选择集
-    // dataInfo["attr"] = 'ssh';
-    // dataInfo["time"] = '2016-01-16';
-    // dataInfo["depth"] = '0.0m';
-    $.ajax({
-        url: "/api/get_data_1date1depth",
-        type: 'POST',
-        data: JSON.stringify(dataInfo), //必须是字符串序列
-        contentType: 'application/json; charset=UTF-8', //必须指明contentType，否则py会当表单处理，很麻烦
-        success: function (data, status) {
-            // csv: [{lon:, lat:, value:}, {}, {}, ...]
-            data = JSON.parse(data);
-            cur1d1dData = data.slice();
-            var dimensions = d3.keys(data[0]);
-            for (var i = 0; i < dimensions.length; i++) {
-                if (dimensions[i] in ['lon', 'lat']) {
-                    continue;
-                }
-                var minmax = d3.extent(data, function (d) {
-                    return +d[dimensions[i]];
-                });
-                minmaxWithAttr[dimensions[i]] = minmax;
-                linearsWithAttr[dimensions[i]] = d3.scale.linear()
-                    .domain(minmax)
-                    .range([0, 1]);
+            if (curattr == 'ow') {
+                printOWHeatMap(curOWdata);
+                printColorBar();
             }
-            data.forEach(function (d) {
-                var xy = projection([d.lon, d.lat]);
-                d.x = xy[0];
-                d.y = xy[1];
-            });
-            if (curattr == 'sla') {
-                printHeatMap(curSLAdata);
-            }
-            else if (curattr == 'ow') {
-                printHeatMap(curOWdata);
-            }
-            else {
-                printHeatMap(cur1d1dData);
-            }
-
-            printColorBar();
-
-            parallelChart.datum(mydata()).call(parachart);
-            ndx1d1dData = crossfilter(cur1d1dData);
-            draw2yScatter();
-            // 这个监听不能放外面，因为传的是当前的gSelector，是绑定了数据的gSelector
-            $('input.attroption').change(function () {
-                curattr = this.value;
-                printHeatMap(cur1d1dData)
-                print2yScatter();
-            });
             $('input.attroption-special').change(function () {
                 curattr = this.value;
                 if (curattr == 'sla') {
                     printHeatMap(curSLAdata);
                 }
                 else {
-                    printHeatMap(curOWdata);
+                    printOWHeatMap(curOWdata);
                 }
-            })
-            $("input[type=checkbox][value=brush]").change(function () {
-                if ($(this).is(':checked')) {
-                    $(".hmbrush").css("display", "");
-                } else {
-                    $(".hmbrush").css("display", "none");
-                }
+                printColorBar();
             });
         }
     });
+
 }
 
 // 画热力图，更换数据集后初次调用
@@ -313,11 +252,19 @@ function printHeatMap(data) {
 // 绑定数据是cur1d1dData才能调用！！
 function addTooltip() {
     hmChartg.selectAll("rect.hm")
-        .on("mouseenter", function (d) {
+        .on("click", function (d) {
+            curlonlat = [d.lon, d.lat];
+            console.log(curlonlat);
+            var reqDataInfo = {
+                'lon': curlonlat[0],
+                'lat': curlonlat[1]
+            };
+            change1x1y(reqDataInfo);
+        })
+        .on("mouseover", function (d) {
             d3.select(this)
-                .style("transform", "scale(3,3)")
                 .style("stroke", "black")
-                .style("stroke-width", "2px");
+                .style("stroke-width", "1px");
             d3.select(".hmtooltip").html(
                 function () {
                     var t = "";
@@ -325,18 +272,19 @@ function addTooltip() {
                         if (k == 'x' || k == 'y') {
                             continue;
                         }
-                        t += (k + ": " + dateFormat(d[k]) + "</br>");
+                        t += (k + ": " + numberFormat(d[k]) + "</br>");
                     }
                     return t;
                 }
             )
                 .style("opacity", 1.0);
-            //console.log(projection([d.lon, d.lat]));
+            // console.log(projection([d.lon, d.lat]));
         })
-        .on("mouseleave", function (d) {
-            d3.select(this).style("transform", "scale(1, 1)").style("stroke", "none");
+        .on("mouseout", function (d) {
+            d3.select(this).style("stroke", "none");
             // d3.select(".hmtooltip").style("opacity", 0.0);
         });
+
 }
 
 // 画ow热力图，主要是线性尺的不同
@@ -420,20 +368,6 @@ function printOWHeatMap(data) {
     exit.remove();
 }
 
-// 画热力图，仅改变属性时直接调用
-function changeAttrHeatMap() {
-    var linear = linearsWithAttr[curattr];
-
-    hmChartg.selectAll("rect")
-        .transition() //启动添加元素时的过渡
-        .duration(2000) //设定过渡时间
-        .style("fill", function () {
-            var p = d3.select(this)[0][0].__data__;
-            return colorInterp(linear(p[curattr]));
-        });
-    printColorBar();
-}
-
 colorbarSvg.on("click", function () {
     d3.select(".hmtooltip").style("opacity", 0.0);
 })
@@ -479,10 +413,23 @@ function printColorBar() {
             return colorInterp(linear(d));
         });
 
-    // var yScale2 = d3.scale.linear()
-    //     .domain(minmaxWithAttr[curattr])
-    //     .range([0, colorBarHeigth])
+    var yScale2 = d3.scale.linear()
+        .domain(minmaxWithAttr[curattr])
+        .range([0, colorBarHeigth])
 
+    var axis = d3.svg.axis()
+        .scale(yScale2)
+        .orient("right");
+    var cbBrushg = colorbarSvg.append("g").attr("class", "cbbrush");
+    cbBrushg.attr("transform", ("translate(" + (startX+colorBarWidth/2) + ", " + startY + ")"))
+        .attr("class", "axis");
+    cbBrushg.call(axis);
+    cbBrushg.call(brushCB.y(yScale2));
+    cbBrushg.selectAll("rect").attr("x", -8)
+        .attr("width", 16).style("stroke", "black")
+        .style("fill-opacity", 0.3);
+    
+    
     // brushCB.y(yScale2);
     // cbBrushg.call(brushCB)
     //     .selectAll("rect").attr("x", 0).attr("y", startY).attr("width", colorBarWidth/2);
@@ -555,4 +502,14 @@ function printColorBar() {
 
     exit.remove();
     */
+}
+
+// 这里是指修改颜色条刷子的定义域和最大小值的文字而已
+function changeColorBar(){
+    var yScale2 = d3.scale.linear()
+        .domain(minmaxWithAttr[curattr])
+        .range([0, colorBarHeigth]);
+    cbBrushg.call(yScale2.brush = d3.svg.brush().y([0, colorBarHeigth]).on("brush", brush));
+    cbBrushg.selectAll("rect").attr("x", -8).attr("width", 16);
+
 }

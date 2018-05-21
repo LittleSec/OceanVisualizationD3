@@ -23,30 +23,34 @@ function draw2yScatter() {
 }
 
 function print2yScatter() {
+    var tmpattr = curattr;
+    if(curattr in ['sla', 'ow']){
+        tmpattr = 'surl_el';
+    }
     xdim = ndx1d1dData.dimension(function (d) {
-        return +d[curattr];
+        return +d[tmpattr];
     });
     xLeftdim = ndx1d1dData.dimension(function (d) {
-        return [+d[curattr], +d[y2attr1]];
+        return [+d[tmpattr], +d[y2attr1]];
     });
     xRightdim = ndx1d1dData.dimension(function (d) {
-        return [+d[curattr], +d[y2attr2]];
+        return [+d[tmpattr], +d[y2attr2]];
     });
     xLgroup = xLeftdim.group();
     xRgroup = xRightdim.group();
-    var xllabel = curattr + ' -- ' + y2attr1;
-    var xrlabel = curattr + ' -- ' + y2attr2;
+    var xllabel = tmpattr + ' -- ' + y2attr1;
+    var xrlabel = tmpattr + ' -- ' + y2attr2;
     twoYScatterChart
         .transitionDuration(1000)
         .dimension(xdim)
-        .x(d3.scale.linear().domain(minmaxWithAttr[curattr]))
+        .x(d3.scale.linear().domain(minmaxWithAttr[tmpattr]))
         .compose([
             dc.scatterPlot(twoYScatterChart)
                 .dimension(xLeftdim)
                 .group(xLgroup, xllabel) //字符串是用来设置图标的
                 .nonemptyOpacity(0.1)
                 .title(function (d) {
-                    return [curattr + ': ' + d[0], y2attr1 + ': ' + d[1]].join('\n');
+                    return [tmpattr + ': ' + d[0], y2attr1 + ': ' + d[1]].join('\n');
                 }),
             dc.scatterPlot(twoYScatterChart)
                 .dimension(xRightdim)
@@ -55,9 +59,9 @@ function print2yScatter() {
                 .ordinalColors(["orange"])
                 .useRightYAxis(true)
                 .title(function (d) {
-                    return [curattr + ': ' + d[0], y2attr2 + ': ' + d[1]].join('\n');
+                    return [tmpattr + ': ' + d[0], y2attr2 + ': ' + d[1]].join('\n');
                 })
         ])
-        .xAxisLabel(curattr).yAxisLabel(y2attr1).rightYAxisLabel(y2attr2);
+        .xAxisLabel(tmpattr).yAxisLabel(y2attr1).rightYAxisLabel(y2attr2);
     twoYScatterChart.render();
 }

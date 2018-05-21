@@ -19,16 +19,29 @@ var requestDataInfo = {
 curattr = "surf_el";
 drawGeoMap(hmChartg);
 // var colorbarSvg = d3.select("#colorbar svg"); //or false
-drawHeatMap(requestDataInfo);
+changeDepthOrDate(requestDataInfo);
 drawQuiver(requestDataInfo);
 hmBrushg.call(brushHM);
+$("input[type=checkbox][value=brush]").change(function () {
+    if ($(this).is(':checked')) {
+        $(".hmbrush").css("display", "");
+    } else {
+        $(".hmbrush").css("display", "none");
+    }
+});
+
+var req1x1yDataInfo = {
+    'lon': curlonlat[0],
+    'lat': curlonlat[1]
+}
+change1x1y(req1x1yDataInfo);
 
 function redrawGroup1() {
     requestDataInfo = {
         "time": curdate,
         "depth": curdepth
     };
-    drawHeatMap(requestDataInfo);
+    changeDepthOrDate(requestDataInfo);
     drawQuiver(requestDataInfo);
 }
 
@@ -53,12 +66,13 @@ $('#ow-slider').jRange({
     width: sliderwidth,
     showLabels: true,
     snap: true,
-    onstatechange: function(value){
-        console.log(value);
+    ondragend: function (value) {
+        console.log('ow coef: ' + value);
+        changeOWcoeff(value);
     }
 });
 $('#ow-slider').jRange('disable');
-$('#ow-slider').jRange('enable');
+
 
 $('#sla-slider').jRange({
     from: 3,
@@ -69,7 +83,11 @@ $('#sla-slider').jRange({
     width: sliderwidth,
     theme: "theme-blue",
     showLabels: true,
-    snap: true
+    snap: true,
+    ondragend: function (value){
+        console.log('sla threshold: ' + value);
+        changeSLAthresold(value);
+    }
 });
 
 $('#ssh-slider').jRange({
@@ -82,7 +100,34 @@ $('#ssh-slider').jRange({
     width: sliderwidth,
     showLabels: true,
     snap: true
+    // ondragend: function (value){
+    //     console.log('ssh scale: ' + value);
+    //     changeSSHextScale(value);
+    // }
 });
+
+$('input.attroption,input.attroption-special').change(function () {
+    // 这个option的值肯定不会是ow或sla，因此不需要合理性判断
+    if (this.value == 'ow') {
+        $('#ow-slider').jRange('enable');
+    }
+    else {
+        $('#ow-slider').jRange('disable');
+    }
+});
+
+
+$("select.y1-picker").change(function () {
+    y2attr1 = $(this).val();
+    redrawLineCharts();
+    print2yScatter();
+});
+
+$("select.y2-picker").change(function () {
+    y2attr2 = $(this).val();
+    redrawLineCharts();
+    print2yScatter();
+})
 
 /*
 svgSelector = d3.select(".one-graph svg") // 实际上指选择了第一个

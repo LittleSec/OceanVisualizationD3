@@ -7,9 +7,10 @@
 var hmChartsvg = d3.select("#heatmap svg");
 var hmChartg = hmChartsvg.append("g");
 var hmBrushg = hmChartsvg.append("g").attr("class", "hmbrush");
-var quiverChart = hmChartsvg.append("g")
+var quiverChart = hmChartsvg.append("g");
+var eddyChart = hmChartsvg.append("g").attr("class", "eddysG");
 var colorbarSvg = d3.select("#colorbar svg");
-var cbBrushg = colorbarSvg.append("g").attr("class", "cbbrush");
+
 var twoYScatterChart = dc.compositeChart("#scatter");
 var parallelChart = d3.select("#parallel");
 var timeTendencyCharts = dc.compositeChart("#time-line-charts", "line-group");
