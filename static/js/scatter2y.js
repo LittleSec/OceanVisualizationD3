@@ -24,7 +24,7 @@ function draw2yScatter() {
 
 function print2yScatter() {
     var tmpattr = curattr;
-    if(curattr in ['sla', 'ow']){
+    if(curattr in ['ow']){
         tmpattr = 'surl_el';
     }
     xdim = ndx1d1dData.dimension(function (d) {

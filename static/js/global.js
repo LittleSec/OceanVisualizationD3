@@ -10,7 +10,6 @@ var hmBrushg = hmChartsvg.append("g").attr("class", "hmbrush");
 var quiverChart = hmChartsvg.append("g");
 var eddyChart = hmChartsvg.append("g").attr("class", "eddysG");
 var colorbarSvg = d3.select("#colorbar svg");
-
 var twoYScatterChart = dc.compositeChart("#scatter");
 var parallelChart = d3.select("#parallel");
 var timeTendencyCharts = dc.compositeChart("#time-line-charts", "line-group");
@@ -26,7 +25,7 @@ var cur1d1dData, cur1x1yData,
     curlonlat = [125.76, 22.88];
 var curlonrange = [124.72, 126.48],
     curlatrange = [22.0, 23.84];
-var curSLAdata, curOWdata, curOWstd, curOWcoef = 0.1;
+var curOWdata, curOWstd, curOWcoef = 0.1;
 
 // 系统固定参数
 var dateDomain = [new Date(2014, 6, 1), new Date(2017, 8, 30)]; // 月份从0月开始。。。。
@@ -49,51 +48,35 @@ var minmaxWithAttr = {}; // 存放各个属性的最大最小值
 var colorBarHeigth = 200; //也意味着共画几个矩形，一个矩形固定高度为1px
 var linearsOW = [d3.scale.linear().range([0, 0.5]), d3.scale.linear().range([0.5, 1])]; // ow专属线性尺（们）
 
-
-
 // 双Y轴图参数
 var y2attr1 = 'water_temp', y2attr2 = 'salinity';
 
-var dataInfo = {
-    "ssh": {
-        "unit": "m", //单位
-        "shortname": "ssh",
-        "standardname": "sea_surface_height",
-        "fileFolder": "ssh",
-        "hasDepth": false //是否有深度
+var attrInfo = {
+    'lon': {
+        'units': '°E'
     },
-    "temp": {
-        "unit": "degree",
-        "standardname": "sea_water_temperature",
-        "shortname": "temp",
-        "fileFolder": "temp",
-        "hasDepth": true
+    'lat': {
+        'units': '°N'        
     },
-    "u": {
-        "unit": "m/s",
-        "shortname": "u",
-        "standardname": "eastward_sea_water_velocity",
-        "fileFolder": "u",
-        "hasDepth": true
+    'surf_el': {
+        'units': 'm'
     },
-    "v": {
-        "unit": "m/s",
-        "shortname": "v",
-        "standardname": "northward_sea_water_velocity",
-        "fileFolder": "v",
-        "hasDepth": true
+    'water_temp': {
+        'units': '°C'
     },
-    "salinity": {
-        "unit": "g/kg",
-        "shortname": "salt",
-        "standardname": "",
-        "fileFolder": "salt",
-        "IsDepth": true
+    'salinity': {
+        'units': 'psu'
     },
-    "time": {
-        "unit": "month"
+    'water_u': {
+        'units': 'm/s'
     },
-    "depth": {
-        "unit": "m"
+    'water_v': {
+        'units': 'm/s'
+    },
+    'sla': {
+        'units': 'cm'
+    },
+    'ow': {
+        'units' : ''
     }
 };

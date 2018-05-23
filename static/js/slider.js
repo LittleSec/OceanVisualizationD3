@@ -12,7 +12,7 @@ function changeSLAthresold(thre){
             return 'none';
         }
         else{
-            return colorInterp(linear(d[curattr]));
+            return colorInterp(linearsWithAttr[curattr](d[curattr]));
         }
     });
 }
