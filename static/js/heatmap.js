@@ -192,6 +192,8 @@ function printHeatMap(data) {
 
 // 绑定数据是cur1d1dData才能调用！！
 function addTooltip() {
+    var seed;
+    var timeout = 2000;
     hmChartg.selectAll("rect.hm")
         .on("click", function (d) {
             curlonlat = [d.lon, d.lat];
@@ -206,23 +208,25 @@ function addTooltip() {
             d3.select(this)
                 .style("stroke", "black")
                 .style("stroke-width", "1px");
-            d3.select(".hmtooltip").html(
-                function () {
-                    var t = "";
-                    for (var k in d) {
-                        if (k == 'x' || k == 'y') {
-                            continue;
+            seed = setTimeout(function () {
+                d3.select(".hmtooltip").html(
+                    function () {
+                        var t = "";
+                        for (var k in d) {
+                            if (k == 'x' || k == 'y') {
+                                continue;
+                            }
+                            // console.log(k);
+                            t += ("<p>" + k + ":&nbsp" + numberFormat(d[k]) + "&nbsp" + attrInfo[k]['units'] + "</p>");
                         }
-                        // console.log(k);
-                        t += ("<p>" + k + ":&nbsp" + numberFormat(d[k]) + "&nbsp" + attrInfo[k]['units'] + "</p>");
+                        return t;
                     }
-                    return t;
-                }
-            )
-                .style("opacity", 1.0);
+                ).style("opacity", 1.0);
+            }, timeout);
             // console.log(projection([d.lon, d.lat]));
         })
         .on("mouseout", function (d) {
+            clearTimeout(seed);
             d3.select(this).style("stroke", "none");
             // d3.select(".hmtooltip").style("opacity", 0.0);
         });

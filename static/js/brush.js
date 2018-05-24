@@ -20,6 +20,7 @@ var brushHM = d3.svg.brush()
 
 // 热力图上的范围选择brush
 function brushed1() {
+    $("#reset-brush1").css("visibility", "visible");
     var extent = brushHM.extent();
     var pos0 = projection.invert(extent[0]);
     var pos1 = projection.invert(extent[1]);
@@ -34,6 +35,14 @@ function brushed1() {
     ndxlondim.filterRange(curlonrange);
     ndxlatdim.filterRange(curlatrange);
     twoYScatterChart.redraw();
+}
+
+function resetBrushed1(){
+    ndxlatdim.filterAll();
+    ndxlondim.filterAll();
+    console.log("resetbrush1....");
+    twoYScatterChart.redraw();
+    $("#reset-brush1").css("visibility", "hidden");
 }
 
 var brushCB = d3.svg.brush()

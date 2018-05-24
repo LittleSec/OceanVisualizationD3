@@ -18,8 +18,8 @@ var depthTendencyCharts = dc.compositeChart("#depth-line-charts");
 
 // 当前状态
 var curdepth = '0.0m', 
-    curdate = '2016-07-01', 
-    curattr = 'surf_el';
+    curdate = '2014-07-01', 
+    curattr = 'salinity';
 var cur1d1dData, cur1x1yData, 
     ndx1d1dData, ndx1x1yData,
     curlonlat = [125.76, 22.88];
@@ -49,7 +49,7 @@ var colorBarHeigth = 200; //也意味着共画几个矩形，一个矩形固定�
 var linearsOW = [d3.scale.linear().range([0, 0.5]), d3.scale.linear().range([0.5, 1])]; // ow专属线性尺（们）
 
 // 双Y轴图参数
-var y2attr1 = 'water_temp', y2attr2 = 'salinity';
+var y2attr1 = 'surf_el', y2attr2 = 'water_temp';
 
 var attrInfo = {
     'lon': {
@@ -74,9 +74,9 @@ var attrInfo = {
         'units': 'm/s'
     },
     'sla': {
-        'units': 'cm'
+        'units': 'm'
     },
     'ow': {
-        'units' : ''
+        'units' : 's^-2'
     }
 };

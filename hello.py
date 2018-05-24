@@ -340,7 +340,7 @@ def get_data_bylonlat():
             fileList = os.listdir(absPath)
             for file in fileList:
                 dict1 = {}
-                df1 = pd.read_csv('/'.join([absPath, file])).round(6)
+                df1 = pd.read_csv('/'.join([absPath, file])).round(6).drop(columns=['ow'])
                 qdf = df1.query(queryExpr).drop(columns=['lon', 'lat'])
                 dict1 = qdf.to_dict('record')
                 dict1[0]['date'] = file[:-4]

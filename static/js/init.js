@@ -13,8 +13,8 @@ laydate.render({
 })
 
 var requestDataInfo = {
-    "time": "2016-05-16",
-    "depth": '0.0m',
+    "time": curdate,
+    "depth": curdepth,
 };
 curattr = "surf_el";
 drawGeoMap(hmChartg);
@@ -75,10 +75,10 @@ $('#ow-slider').jRange('disable');
 
 
 $('#sla-slider').jRange({
-    from: 3,
+    from: 0,
     to: 10,
     step: 1,
-    scale: [3, 4, 5, 6, 7, 8, 9, 10],
+    scale: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
     format: '%s',
     width: sliderwidth,
     theme: "theme-blue",
@@ -116,18 +116,21 @@ $('input.attroption,input.attroption-special').change(function () {
     }
 });
 
+$("#reset-brush1").css("visibility", "hidden").click(resetBrushed1());
 
 $("select.y1-picker").change(function () {
-    y2attr1 = $(this).val();
+    y2attr1 = this.value;
     redrawLineCharts();
     print2yScatter();
 });
 
 $("select.y2-picker").change(function () {
-    y2attr2 = $(this).val();
+    y2attr2 = this.value;
     redrawLineCharts();
     print2yScatter();
 })
+
+
 
 /*
 svgSelector = d3.select(".one-graph svg") // 实际上指选择了第一个

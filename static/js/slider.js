@@ -8,7 +8,7 @@ function changeOWcoeff(coef){
 
 function changeSLAthresold(thre){
     hmChartg.selectAll("rect.hm").style("fill", function(d){
-        if(d['sla'] > -thre && d['sla'] < +thre){
+        if(d['sla'] > -thre/100 && d['sla'] < +thre/100){
             return 'none';
         }
         else{

@@ -2,6 +2,11 @@ var parachart = nv.models.parallelCoordinatesChart()
     .dimensionData(getDimensions())
     .displayBrush(false)
     .lineTension(0.85);
+    // .color(function(d, i){
+    //     var colors = d3.scale.category20().range().slice(10);
+    //     console.log(colors[i % colors.length-1]);
+    //     return colors[i % colors.length-1];
+    // });
 
 nv.utils.windowResize(parachart.update);
 

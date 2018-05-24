@@ -13,7 +13,7 @@ function draw2yScatter() {
     });
     ndxlatdim = ndx1d1dData.dimension(function (d) {
         return +d.lat;
-    })
+    });
     twoYScatterChart.margins({ top: 30, right: 30, bottom: 30, left: 30 })
         .shareTitle(false).elasticY(true)
         .legend(dc.legend().x(70).y(10).itemHeight(13).gap(5))
@@ -39,6 +39,7 @@ function print2yScatter() {
     xLgroup = xLeftdim.group();
     xRgroup = xRightdim.group();
     var xllabel = tmpattr + ' -- ' + y2attr1;
+    console.log('y2attr1: ' + y2attr1);
     var xrlabel = tmpattr + ' -- ' + y2attr2;
     twoYScatterChart
         .transitionDuration(1000)
