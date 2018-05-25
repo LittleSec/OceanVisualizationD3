@@ -54,3 +54,4 @@ function brushed2(){
     var extent = brushCB.extent();
     console.log(extent);
 }
+

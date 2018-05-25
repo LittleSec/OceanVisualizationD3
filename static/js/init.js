@@ -78,7 +78,7 @@ $('#sla-slider').jRange({
     from: 0,
     to: 10,
     step: 1,
-    scale: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+    scale: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
     format: '%s',
     width: sliderwidth,
     theme: "theme-blue",
@@ -116,7 +116,7 @@ $('input.attroption,input.attroption-special').change(function () {
     }
 });
 
-$("#reset-brush1").css("visibility", "hidden").click(resetBrushed1());
+$("#reset-brush1").css("visibility", "hidden");
 
 $("select.y1-picker").change(function () {
     y2attr1 = this.value;

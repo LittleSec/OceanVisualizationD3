@@ -49,22 +49,28 @@ function nonzero_min(chart) {
 }
 
 // 更改主属性后重新绘制框选时间的图
-function changeTimeRangeChart(){
+function changeTimeRangeChart() {
     var tmpattr = curattr;
-    if(curattr in ['ow']){
+    if (curattr in ['ow']) {
         tmpattr = 'surl_el';
     }
     var y3group = dateDimension.group().reduceSum(function (d) {
         return +d[tmpattr];
     });
-    timeRangeChart.group(y3group);
+    timeRangeChart
+        .dimension(dateDimension)
+        .group(y3group)
+        .x(d3.time.scale().domain(dateDomain))
+        .round(d3.time.month.round)
+        .xUnits(d3.time.months);
+    timeRangeChart.yAxis().ticks(0);
     console.log('changeTimeRangeChart');
     timeRangeChart.redraw();
 }
 
 function redrawLineCharts() {
     var tmpattr = curattr;
-    if(curattr in ['ow']){
+    if (curattr in ['ow']) {
         tmpattr = 'surl_el';
     }
     depthDimension.filter(parseFloat(curdepth));
@@ -185,12 +191,12 @@ function change1x1y(dataInfo) {
                 return d.depthnum;
             });
             redrawLineCharts();
-            $("h5.depth-title").text(function(){
+            $("h5.depth-title").text(function () {
                 var maintitle = 'depth line chart ';
                 var lonlattips = '(lon: ' + curlonlat[0] + ', lat: ' + curlonlat[1] + ')';
                 return maintitle + lonlattips;
             });
-            $("h5.time-title").text(function(){
+            $("h5.time-title").text(function () {
                 var maintitle = 'time line chart ';
                 var lonlattips = '(lon: ' + curlonlat[0] + ', lat: ' + curlonlat[1] + ')';
                 return maintitle + lonlattips;

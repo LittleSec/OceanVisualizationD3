@@ -92,7 +92,7 @@ function changeDepthOrDate(dataInfo) {
             // cur1d1dData = data.slice();
             var dimensions = d3.keys(cur1d1dData[0]);
             for (var i = 0; i < dimensions.length; i++) {
-                if (dimensions[i] in ['lon', 'lat', 'ow']) {
+                if ($.inArray(dimensions[i], ['lat', 'lon', 'ow']) != -1) {
                     continue;
                 }
                 var minmax = d3.extent(cur1d1dData, function (d) {
