@@ -93,6 +93,11 @@ function getDimensions() {
             tooltip: "water_temp",
         },
         {
+            key: "velocity",
+            format: d3.format("g"),
+            tooltip: "velocity(composition)"
+        },
+        {
             key: "water_u",
             format: d3.format("g"),
             tooltip: "water_u",

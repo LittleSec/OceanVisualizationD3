@@ -67,6 +67,9 @@ var attrInfo = {
     'salinity': {
         'units': 'psu'
     },
+    'velocity': {
+        'units': 'm'
+    },
     'water_u': {
         'units': 'm/s'
     },
@@ -77,6 +80,6 @@ var attrInfo = {
         'units': 'm'
     },
     'ow': {
-        'units' : 's^-2'
+        'units': 's^-2'
     }
 };

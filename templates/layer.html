@@ -78,7 +78,7 @@
                                             </div>
                                             <div class="radio">
                                                 <label class="radio-inline">
-                                                    <input class="attroption" type="radio" name="optionsRadios" value="sla"> sla
+                                                    <input class="attroption" type="radio" name="optionsRadios" value="velocity"> velocity(composition)
                                                 </label>
                                                 <label class="radio-inline">
                                                     <input class="attroption-special" type="radio" name="optionsRadios" value="ow"> Okubo-Weiss
@@ -113,22 +113,6 @@
                                         </div>
                                     </div>
                                     <div class="line-spacing col-xs-12 col-sm-12 col-md-12 col-lg-12" style="height: 2em;"></div>
-                                    <div class="ow-threshold col-xs-12 col-sm-12 col-md-12 col-lg-12">
-                                        <label for="">Okubo-Weiss</label>
-                                        <p>Deviation of the ow parameter:&nbsp;</p>
-                                        <p>Multiply a coefficient as a threshold:&nbsp;</p>
-                                        <div id="ow-slider" style="width: 100%;"></div>
-                                    </div>
-                                    <div class="line-spacing col-xs-12 col-sm-12 col-md-12 col-lg-12" style="height: 2em;"></div>
-                                    <div class="line-spacing col-xs-12 col-sm-12 col-md-12 col-lg-12" style="height: 2em;"></div>
-                                    <div class="sla-threshold col-xs-12 col-sm-12 col-md-12 col-lg-12">
-                                        <label for="">SLA</label>
-                                        <p>Set a threshold:&nbsp;
-                                            <small>(units:&nbsp;cm)</small>
-                                        </p>
-                                        <div id="sla-slider" style="width: 100%;"></div>
-                                    </div>
-                                    <div class="line-spacing col-xs-12 col-sm-12 col-md-12 col-lg-12" style="height: 2em;"></div>
                                     <div class="line-spacing col-xs-12 col-sm-12 col-md-12 col-lg-12" style="height: 2em;"></div>
                                     <div class="ssh-extremum col-xs-12 col-sm-12 col-md-12 col-lg-12">
                                         <label for="">SSH extremum scale</label>
@@ -155,7 +139,7 @@
                                             </label>
                                         </div>                            
                                         <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">        
-                                            <button id="reset-brush1" type="button" class="btn btn-xs btn-success">Reset<br>Brush</button>
+                                            <button id="reset-brush1" onclick="resetBrushed1();" type="button" class="btn btn-xs btn-success">Reset<br>Brush</button>
                                         </div>
                                         <!-- 这部分只是为留一个空隙，方便主视图居中，顺便把箭头的marker放这里。 -->
                                         <svg>
@@ -214,6 +198,7 @@
                                             <option value="salinity">salinity</option>
                                             <option value="water_u">water_u</option>
                                             <option value="water_v">water_v</option>
+                                            <option value="velocity">velocity(composition)</option>                                            
                                         </select>
                                     </div>
                                     <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xs-offset-4 col-sm-offset-4 col-md-offset-4 col-lg-offset-4">
@@ -223,6 +208,7 @@
                                             <option value="water_temp">water_temp</option>
                                             <option value="water_u">water_u</option>
                                             <option value="water_v">water_v</option>
+                                            <option value="velocity">velocity(composition)</option>                                            
                                         </select>
                                     </div>
                                 </div>
