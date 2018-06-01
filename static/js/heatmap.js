@@ -1,5 +1,6 @@
 /* 依赖:
  * 1. linechart2yaxis.js
+ * 2. quiver.js
  * 
  */
 
@@ -64,6 +65,7 @@ function printLonLat(gSelector, geoPathGenerator, lonlat) {
 function changeDepthOrDate(dataInfo) {
     // 获取正常属性并绘图，设置各全局变量，平行坐标图和散点图是无论是否选中都要更换的
     drawQuiver(dataInfo);
+    
     // 获取ow的标准差，设置对应的线性比例尺（们）
     $.ajax({
         url: "/api/get_ow_std",
