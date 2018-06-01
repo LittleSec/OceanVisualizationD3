@@ -53,7 +53,7 @@ function changeDate(date) {
 $("input.depthoption").change(function () {
     curdepth = this.value;
     redrawGroup1();
-})
+});
 
 var sliderwidth = $(".attr-selector").width() * 0.9;
 
@@ -95,4 +95,38 @@ $("select.y2-picker").change(function () {
     y2attr2 = this.value;
     redrawLineCharts();
     print2yScatter();
-})
+});
+
+$("input.date-space-option").change(function () {
+    setCarouselItem();
+});
+
+$("button.play-stop-btn").click(function(){
+    var span = $(this).children('span');
+    if (span.hasClass('glyphicon-play')){
+        span.attr("class", "glyphicon glyphicon-pause");
+        $(this).attr("class", "play-stop-btn btn btn-danger");
+        // 开始自动播放，不再绘图，不允许滑条
+    }
+    else{
+        span.attr("class", "glyphicon glyphicon-play");
+        $(this).attr("class", "play-stop-btn btn btn-success");
+        // 停止自动播放，开始绘图，开放滑条
+    }
+});
+
+// 开启/关闭涡旋模块
+$("div.eddy-block input.date-space-option").attr("disabled", "disabled");
+$("div.eddy-block button").attr("disabled", "disabled");
+$('#ssh-slider').jRange('disable');
+$("input[type=checkbox][value=eddy]").change(function () {
+    if ($(this).is(':checked')) {
+        $("div.eddy-block input.date-space-option").removeAttr("disabled");
+        $("div.eddy-block button").removeAttr("disabled");
+        $('#ssh-slider').jRange('enable');
+    } else {         
+        $("div.eddy-block input.date-space-option").attr("disabled", "disabled");
+        $("div.eddy-block button").attr("disabled", "disabled");
+        $('#ssh-slider').jRange('disable');
+    }
+});

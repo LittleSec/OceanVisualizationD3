@@ -51,6 +51,22 @@ var linearsOW = [d3.scale.linear().range([0, 0.5]), d3.scale.linear().range([0.5
 // 双Y轴图参数
 var y2attr1 = 'salinity', y2attr2 = 'water_temp';
 
+// 涡旋轮播
+var carousel;
+var dateIns;
+layui.use('carousel', function(){
+    carousel = layui.carousel;    
+    dateIns = carousel.render({
+        elem: '#date-carousel',
+        width: '100%',
+        height: '80px',
+        arrow: 'hover',
+        indicator: 'none',
+        autoplay: false,
+        interval: 5000
+    });
+});
+
 var attrInfo = {
     'lon': {
         'units': '°E'
