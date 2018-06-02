@@ -89,16 +89,26 @@
 
 /* 冷涡 */
 .cold-eddy{
+    /* stroke: blue;
+    stroke-width: 1px; */
+    opacity: 0.8;
+}
+.cold-center{
+    fill: blue;
     stroke: blue;
     stroke-width: 1px;
-    fill: none;
 }
 
 /* 暖涡 */
 .warm-eddy{
+    /* stroke: red;
+    stroke-width: 1px; */
+    opacity: 0.8;    
+}
+.warm-center{
+    fill: red;
     stroke: red;
     stroke-width: 1px;
-    fill: none;
 }
 
 /* 轮播条样式 官方实例中中通过审查元素发现其样式写在一个html头部 */

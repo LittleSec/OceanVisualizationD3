@@ -20,12 +20,12 @@ var depthTendencyCharts = dc.compositeChart("#depth-line-charts");
 var curdepth = '0.0m', 
     curdate = '2016-07-03', 
     curattr = 'surf_el';
-var cur1d1dData, cur1x1yData, 
+var cur1d1dData, cur1x1yData, curEddyData,
     ndx1d1dData, ndx1x1yData,
     curlonlat = [128.24, 24.4];
 var curlonrange = [124.72, 126.48],
     curlatrange = [22.0, 23.84];
-var curOWdata, curOWstd, curOWcoef = 0.1;
+var curOWdata, curOWstd, curOWcoef = 0.1, curScale = 40;
 
 // 系统固定参数
 var dateDomain = [new Date(2014, 6, 1), new Date(2017, 8, 30)]; // 月份从0月开始。。。。
@@ -52,6 +52,8 @@ var linearsOW = [d3.scale.linear().range([0, 0.5]), d3.scale.linear().range([0.5
 var y2attr1 = 'salinity', y2attr2 = 'water_temp';
 
 // 涡旋轮播
+
+var isAutoPlay = false; // 区分是自动播放模式还是手动选择模式
 var carousel;
 var dateIns;
 layui.use('carousel', function(){
@@ -62,9 +64,26 @@ layui.use('carousel', function(){
         height: '80px',
         arrow: 'hover',
         indicator: 'none',
-        autoplay: false,
-        interval: 5000
+        autoplay: isAutoPlay,
+        interval: 4000
     });
+});
+// 涡旋标记
+var LAND = 0
+var WARMEDDYCENTER = 1
+var COLDEDDYCENTER = 2
+var WARMEDDYSCALE = 3
+var COLDEDDYSCALE = 4
+var BLACKGROUND = 5
+
+
+// 时间选择器
+laydate.render({
+    elem: "#date-pick",
+    min: "2014-07-01",
+    max: "2017-09-30",
+    value: curdate,
+    btns: ['confirm']
 });
 
 var attrInfo = {
@@ -84,7 +103,7 @@ var attrInfo = {
         'units': 'psu'
     },
     'velocity': {
-        'units': 'm'
+        'units': 'm/s'
     },
     'water_u': {
         'units': 'm/s'

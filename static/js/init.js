@@ -1,16 +1,14 @@
 laydate.render({
     elem: "#date-pick",
-    min: "2014-07-01",
-    max: "2017-09-30",
-    value: "2014-07-01",
-    btns: ['confirm'],
     done: function (value, date, endDate) {
-        changeDate(value);
+        curdate = value;
+        setCarouselItem()
+        redrawGroup1();
         // console.log(value); //得到日期生成的值，如：2017-08-18
         // console.log(date); //得到日期时间对象：{year: 2017, month: 8, date: 18, hours: 0, minutes: 0, seconds: 0}
         // console.log(endDate); //得结束的日期时间对象，开启范围选择（range: true）才会返回。对象成员同上。
     }
-})
+});
 
 var requestDataInfo = {
     "time": curdate,
@@ -37,17 +35,13 @@ var req1x1yDataInfo = {
 change1x1y(req1x1yDataInfo);
 
 function redrawGroup1() {
+    console.log('redrawGroup1');
     requestDataInfo = {
         "time": curdate,
         "depth": curdepth
     };
     changeDepthOrDate(requestDataInfo);
     drawQuiver(requestDataInfo);
-}
-
-function changeDate(date) {
-    curdate = date;
-    redrawGroup1();
 }
 
 $("input.depthoption").change(function () {
@@ -66,11 +60,11 @@ $('#ssh-slider').jRange({
     theme: "theme-blue",
     width: sliderwidth,
     showLabels: true,
-    snap: true
-    // ondragend: function (value){
-    //     console.log('ssh scale: ' + value);
-    //     changeSSHextScale(value);
-    // }
+    snap: true,
+    ondragend: function (value){
+        console.log('ssh scale: ' + value);
+        changeSSHextScale(value);
+    }
 });
 
 // $('input.attroption,input.attroption-special').change(function () {
@@ -85,48 +79,83 @@ $('#ssh-slider').jRange({
 
 $("#reset-brush1").css("visibility", "hidden");
 
+
+// 双y轴所指示的属性发生变化
 $("select.y1-picker").change(function () {
     y2attr1 = this.value;
     redrawLineCharts();
     print2yScatter();
 });
-
 $("select.y2-picker").change(function () {
     y2attr2 = this.value;
     redrawLineCharts();
     print2yScatter();
 });
 
+// 设置需要播放的时间
 $("input.date-space-option").change(function () {
     setCarouselItem();
 });
 
-$("button.play-stop-btn").click(function(){
+// 停止和播放按钮
+$("button.play-stop-btn").click(function () {
     var span = $(this).children('span');
-    if (span.hasClass('glyphicon-play')){
+    if (span.hasClass('glyphicon-play')) {
         span.attr("class", "glyphicon glyphicon-pause");
         $(this).attr("class", "play-stop-btn btn btn-danger");
         // 开始自动播放，不再绘图，不允许滑条
+        isAutoPlay = true;
+        dateIns.reload({
+            autoplay: isAutoPlay
+        });
+        $('#ssh-slider').jRange('disable');
     }
-    else{
+    else {
         span.attr("class", "glyphicon glyphicon-play");
         $(this).attr("class", "play-stop-btn btn btn-success");
         // 停止自动播放，开始绘图，开放滑条
+        isAutoPlay = false;
+        dateIns.reload({
+            autoplay: isAutoPlay
+        });
+        $('#ssh-slider').jRange('enable');
+        var requestDataInfo = {
+            "time": curdate,
+            "depth": curdepth,
+        };
+        UpDateRedrawScaAndPara(requestDataInfo);
     }
 });
 
-// 开启/关闭涡旋模块
+// 初始禁用eddy模块
 $("div.eddy-block input.date-space-option").attr("disabled", "disabled");
 $("div.eddy-block button").attr("disabled", "disabled");
 $('#ssh-slider').jRange('disable');
+$('.eddy-block').children('*').css('color', 'grey');
+// 开启/关闭涡旋模块
 $("input[type=checkbox][value=eddy]").change(function () {
     if ($(this).is(':checked')) {
+        // $("div.eddy-block").children("*").removeAttr("disabled");
         $("div.eddy-block input.date-space-option").removeAttr("disabled");
         $("div.eddy-block button").removeAttr("disabled");
         $('#ssh-slider').jRange('enable');
-    } else {         
+        $('.eddy-block').children('*').css('color', '');
+        setCarouselItem();
+        $("input.depthoption").attr("disabled", "disabled").css('color', 'grey');
+        $("input[type=checkbox][value=quiver]").attr("disabled", "disabled").css('color', 'grey');
+    } else {
+        // $("div.eddy-block").children("*").attr("disabled", "disabled");        
         $("div.eddy-block input.date-space-option").attr("disabled", "disabled");
         $("div.eddy-block button").attr("disabled", "disabled");
         $('#ssh-slider').jRange('disable');
+        $('.eddy-block').children('*').css('color', 'grey');
+        $("input.depthoption").removeAttr("disabled").css('color', '');
+        $("input[type=checkbox][value=quiver]").removeAttr("disabled").css('color', '');
+        // 绘图，以下是eddy模式下不请求无关数据情况下重新绘图的代码
+        var requestDataInfo = {
+            "time": curdate,
+            "depth": curdepth,
+        };
+        changeDepthOrDate(requestDataInfo);
     }
 });
