@@ -323,7 +323,7 @@ colorbarSvg.on("click", function () {
 // 每次调用都去除再重画
 function printColorBar() {
     // 如果使用能指定配字个数的代码，那么传过来的选择集应该是g
-    console.log('colorbar, now is: ' + curattr + ', minmax is: ' + minmaxWithAttr[curattr]);
+    // console.log('colorbar, now is: ' + curattr + ', minmax is: ' + minmaxWithAttr[curattr]);
     var min = minmaxWithAttr[curattr][0];
     var max = minmaxWithAttr[curattr][1];
     if (colorbarSvg.select("g.colorbar")[0][0] == null) {

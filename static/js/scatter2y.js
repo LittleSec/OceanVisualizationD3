@@ -39,7 +39,7 @@ function print2yScatter() {
     xLgroup = xLeftdim.group();
     xRgroup = xRightdim.group();
     var xllabel = tmpattr + ' -- ' + y2attr1;
-    console.log('y2attr1: ' + y2attr1);
+    // console.log('y2attr1: ' + y2attr1);
     var xrlabel = tmpattr + ' -- ' + y2attr2;
     twoYScatterChart
         .transitionDuration(1000)
