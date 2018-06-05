@@ -77,8 +77,10 @@ function changeDepthOrDate(dataInfo) {
             // var respond = JSON.parse(data);
             curOWstd = data['std'];
             minmaxWithAttr['ow'] = [-curOWstd, curOWstd];
-            linearsOW[0].domain([curOWstd, curOWstd * curOWcoef]);
-            linearsOW[1].domain([-curOWstd * curOWcoef, -curOWstd]);
+            linearsWithAttr['ow'] = d3.scale.linear()
+                    .domain(minmaxWithAttr['ow'])
+                    .range([0, 1])
+                    .clamp(true);
         }
     });
     // 获取ow数据并绘图，一般来说标准差比ow数据早到达前段。
@@ -103,39 +105,38 @@ function changeDepthOrDate(dataInfo) {
                 minmaxWithAttr[dimensions[i]] = minmax;
                 linearsWithAttr[dimensions[i]] = d3.scale.linear()
                     .domain(minmax)
-                    .range([0, 1]);
+                    .range([0, 1])
+                    .clamp(true);
             }
             cur1d1dData.forEach(function (d) {
                 var xy = projection([d.lon, d.lat]);
                 d.x = xy[0];
                 d.y = xy[1];
             });
-            if (curattr != 'ow') {
-                printHeatMap(cur1d1dData);
-            }
-            else {
-                printOWHeatMap(cur1d1dData);
-            }
+
+            printHeatMap(cur1d1dData);
             addTooltip();
             printColorBar();
-            // 以下图是即使不是选中常规属性，也是要更换的图
-            parallelChart.datum(mydata()).call(parachart);
-            ndx1d1dData = crossfilter(cur1d1dData);
-            draw2yScatter();
-            // 这个监听不能放外面，因为传的是当前的gSelector，是绑定了数据的gSelector
-            $('input.attroption').change(function () {
-                // 这个option的值肯定不会是ow或sla，因此不需要合理性判断
-                curattr = this.value;
-                printHeatMap(cur1d1dData);
-                printColorBar();
-                print2yScatter();
-                changeTimeRangeChart();
-            });
-            $('input.attroption-special').change(function () {
-                curattr = this.value;
-                printOWHeatMap(cur1d1dData);
-                printColorBar();
-            });
+            if(!isAutoPlay){
+                // 以下图是即使不是选中常规属性，也是要更换的图
+                parallelChart.datum(mydata()).call(parachart);
+                ndx1d1dData = crossfilter(cur1d1dData);
+                draw2yScatter();
+                // 这个监听不能放外面，因为传的是当前的gSelector，是绑定了数据的gSelector
+                $('input.attroption').change(function () {
+                    // 这个option的值肯定不会是ow或sla，因此不需要合理性判断
+                    curattr = this.value;
+                    printHeatMap(cur1d1dData);
+                    printColorBar();
+                    print2yScatter();
+                    changeTimeRangeChart();
+                });
+                $('input.attroption-special').change(function () {
+                    curattr = this.value;
+                    printHeatMap(cur1d1dData);
+                    printColorBar();
+                });
+            }
         }
     });
 }
@@ -162,7 +163,7 @@ function printHeatMap(data) {
             return d.y - yadd;
         })
         .transition() //启动添加元素时的过渡
-        .duration(2000) //设定过渡时间
+        .duration(1500) //设定过渡时间
         .style("fill", function (d) {
             return colorInterp(linear(d[curattr]));
         });
@@ -184,7 +185,7 @@ function printHeatMap(data) {
         })
         .attr("class", "hm")
         .transition() //启动添加元素时的过渡
-        .duration(2000) //设定过渡时间
+        .duration(1500) //设定过渡时间
         .style("fill", function (d) {
             return colorInterp(linear(d[curattr]));
         });
@@ -233,87 +234,6 @@ function addTooltip() {
             // d3.select(".hmtooltip").style("opacity", 0.0);
         });
 
-}
-
-// 画ow热力图，主要是线性尺的不同
-function printOWHeatMap(data) {
-    var update = hmChartg.selectAll("rect.hm").data(data);
-    var enter = update.enter();
-    var exit = update.exit();
-
-    update.attr("x", function (d) {
-        return d.x;
-    })
-        .attr("y", function (d) {
-            return d.y;
-        })
-        .attr("width", function (d) {
-            var xadd = projection([d.lon + resolution, d.lat])[0];
-            return xadd - d.x;
-        })
-        .attr("height", function (d) {
-            var yadd = projection([d.lon, d.lat + resolution])[1];
-            return d.y - yadd;
-        })
-        .transition() //启动添加元素时的过渡
-        .duration(2000) //设定过渡时间
-        .style("fill", function (d) {
-            var threshold = curOWstd * curOWcoef;
-            if (d[curattr] <= -curOWstd) {
-                return colorInterp(1);
-            }
-            else if (-curOWstd < d[curattr] && d[curattr] <= -threshold) {
-                return colorInterp(linearsOW[1](d[curattr]));
-            }
-            else if (-threshold < d[curattr] && d[curattr] <= threshold) {
-                return colorInterp(0.5);
-            }
-            else if (threshold < d[curattr] && d[curattr] <= curOWstd) {
-                return colorInterp(linearsOW[0](d[curattr]));
-            }
-            else {
-                return colorInterp(0);
-            }
-        });
-
-    enter.append("rect")
-        .attr("x", function (d) {
-            return d.x;
-        })
-        .attr("y", function (d) {
-            return d.y;
-        })
-        .attr("width", function (d) {
-            var xadd = projection([d.lon + resolution, d.lat])[0];
-            return xadd - d.x;
-        })
-        .attr("height", function (d) {
-            var yadd = projection([d.lon, d.lat + resolution])[1];
-            return d.y - yadd;
-        })
-        .attr("class", "hm")
-        .transition() //启动添加元素时的过渡
-        .duration(2000) //设定过渡时间
-        .style("fill", function (d) {
-            var threshold = curOWstd * curOWcoef;
-            if (d[curattr] <= -curOWstd) {
-                return colorInterp(1);
-            }
-            else if (-curOWstd < d[curattr] && d[curattr] <= -threshold) {
-                return colorInterp(linearsOW[1](d[curattr]));
-            }
-            else if (-threshold < d[curattr] && d[curattr] <= threshold) {
-                return colorInterp(0.5);
-            }
-            else if (threshold < d[curattr] && d[curattr] <= curOWstd) {
-                return colorInterp(linearsOW[0](d[curattr]));
-            }
-            else {
-                return colorInterp(0);
-            }
-        });
-
-    exit.remove();
 }
 
 colorbarSvg.on("click", function () {
