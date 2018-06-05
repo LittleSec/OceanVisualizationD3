@@ -38,7 +38,7 @@ function setCarouselItem() {
     update.text(function (d) { return d; });
     enter.append('div').text(function (d) { return d; });
     exit.remove();
-    dateIns.reload(); // 重新设置滚动条
+    dateIns.reload({ index: 0 }); // 重新设置滚动条
 
     //监听轮播切换事件
     carousel.on('change(date-carousel)', function (obj) { //date-carousel来源于对应HTML容器的 lay-filter="date-carousel" 属性值
@@ -61,7 +61,7 @@ function changeSSHextScale(value) {
         "time": curdate,
         "scale": curScale
     };
-    drawEddy(requestDataInfo);
+    drawEddyBoundaryAndCenter(requestDataInfo);
 }
 
 function changeDateEddy() {
@@ -70,16 +70,13 @@ function changeDateEddy() {
         "depth": curdepth,
         "scale": curScale
     };
-    // 更新数据，因为请求数据后前端也需要处理
-    if(! isAutoPlay){
-        UpDateRedrawScaAndPara(requestDataInfo);
-    }
-
+    changeDepthOrDate(requestDataInfo)
+    
     // quiver
     drawQuiver(requestDataInfo);
 
     // ssh edd
-    drawEddy(requestDataInfo);
+    drawEddyBoundaryAndCenter(requestDataInfo);
 
     // depth line chart
     var da = d3.time.day(new Date(curdate));
@@ -88,168 +85,132 @@ function changeDateEddy() {
 }
 
 // eddy模式下的非播放模式的绘图，只更新平行坐标图和散点图
-function UpDateRedrawScaAndPara(dataInfo) {
-    $.ajax({
-        url: "/api/get_ow_std",
-        type: 'POST',
-        data: JSON.stringify(dataInfo), //必须是字符串序列
-        contentType: 'application/json; charset=UTF-8', //必须指明contentType，否则py会当表单处理，很麻烦
-        success: function (data, status) {
-            // data: {std: value}
-            // var respond = JSON.parse(data);
-            curOWstd = data['std'];
-            minmaxWithAttr['ow'] = [-curOWstd, curOWstd];
-            linearsOW[0].domain([curOWstd, curOWstd * curOWcoef]);
-            linearsOW[1].domain([-curOWstd * curOWcoef, -curOWstd]);
-        }
+function UpDateRedrawScaAndPara() {
+    parallelChart.datum(mydata()).call(parachart);
+    ndx1d1dData = crossfilter(cur1d1dData);
+    draw2yScatter();
+    // 这个监听不能放外面，因为传的是当前的gSelector，是绑定了数据的gSelector
+    $('input.attroption').change(function () {
+        // 这个option的值肯定不会是ow，因此不需要合理性判断
+        curattr = this.value;
+        printHeatMap(cur1d1dData);
+        printColorBar();
+        print2yScatter();
+        changeTimeRangeChart();
     });
-    $.ajax({
-        url: "/api/get_data_1date1depth",
-        type: 'POST',
-        data: JSON.stringify(dataInfo), //必须是字符串序列
-        contentType: 'application/json; charset=UTF-8', //必须指明contentType，否则py会当表单处理，很麻烦
-        success: function (data, status) {
-            // csv: [{lon:, lat:, value:}, {}, {}, ...]
-            cur1d1dData = JSON.parse(data);
-            // cur1d1dData = data.slice();
-            var dimensions = d3.keys(cur1d1dData[0]);
-            for (var i = 0; i < dimensions.length; i++) {
-                if ($.inArray(dimensions[i], ['lat', 'lon', 'ow']) != -1) {
-                    continue;
-                }
-                var minmax = d3.extent(cur1d1dData, function (d) {
-                    return +d[dimensions[i]];
-                });
-                minmaxWithAttr[dimensions[i]] = minmax;
-                linearsWithAttr[dimensions[i]] = d3.scale.linear()
-                    .domain(minmax)
-                    .range([0, 1]);
-            }
-            cur1d1dData.forEach(function (d) {
-                var xy = projection([d.lon, d.lat]);
-                d.x = xy[0];
-                d.y = xy[1];
-            });
-            ndx1d1dData = crossfilter(cur1d1dData);
-            parallelChart.datum(mydata()).call(parachart);
-            ndx1d1dData = crossfilter(cur1d1dData);
-            draw2yScatter();
-            // 这个监听不能放外面，因为传的是当前的gSelector，是绑定了数据的gSelector
-            $('input.attroption').change(function () {
-                // 这个option的值肯定不会是ow，因此不需要合理性判断
-                curattr = this.value;
-                print2yScatter();
-                changeTimeRangeChart();
-            });
-            $('input.attroption-special').change(function () {
-                curattr = this.value;
-            });
-        }
+    $('input.attroption-special').change(function () {
+        curattr = this.value;
+        printHeatMap(cur1d1dData);
+        printColorBar();
     });
 }
 
-function printEddy(data) {
-    var linear = linearsWithAttr['surf_el'];
-    var update = hmChartg.selectAll("rect.hm").data(data);
+// 绘边界和中心
+function printEddyBoundaryAndCenter(data) {
+    // 边界
+    var update = eddyBoundaryChart.selectAll("path.eddy-line").data(data);
     var enter = update.enter();
     var exit = update.exit();
 
+    update.attr("d", function (d) {
+        return eddyBoundaryPath(d['boundaryProj']);
+    }).attr("class", function (d) {
+        if (d['type'] == 'warm') {
+            return 'eddy-line warm-eddy';
+        }
+        else {
+            return 'eddy-line cold-eddy';
+        }
+    });
+    enter.append("path")
+        .attr("d", function (d) {
+            return eddyBoundaryPath(d['boundaryProj']);
+        }).attr("class", function (d) {
+            if (d['type'] == 'warm') {
+                return 'eddy-line warm-eddy';
+            }
+            else {
+                return 'eddy-line cold-eddy';
+            }
+        });
+
+    exit.remove();
+
+    // 中心
+    update = eddyBoundaryChart.selectAll("rect.eddyhm").data(data);
+    enter = update.enter();
+    exit = update.exit();
+
     update.attr("x", function (d) {
-        return d.x;
+        return d['centerProj'][0];
     })
         .attr("y", function (d) {
-            return d.y;
+            return d['centerProj'][1];
         })
         .attr("width", function (d) {
-            var xadd = projection([d.lon + resolution, d.lat])[0];
-            return xadd - d.x;
+            var xadd = projection([d['center'][0] + resolution, d['center'][1]])[0];
+            return xadd - d['centerProj'][0];
         })
         .attr("height", function (d) {
-            var yadd = projection([d.lon, d.lat + resolution])[1];
-            return d.y - yadd;
-        })
-        .transition() //启动添加元素时的过渡
-        .duration(1500) //设定过渡时间
-        .style("fill", function (d) {
-            return colorInterp(linear(d['surf_el']));
+            var yadd = projection([d['center'][0], d['center'][1] + resolution])[1];
+            return d['centerProj'][1] - yadd;
         })
         .attr("class", function (d) {
-            if (d['eddy'] == WARMEDDYCENTER) {
-                return 'hm warm-center';
+            if (d['type'] == 'warm') {
+                return 'eddyhm warm-center';
             }
-            else if (d['eddy'] == WARMEDDYSCALE) {
-                return 'hm warm-eddy';
-            }
-            else if (d['eddy'] == COLDEDDYCENTER) {
-                return 'hm cold-center';
-            }
-            else if (d['eddy'] == COLDEDDYSCALE) {
-                return 'hm cold-eddy';
+            else {
+                return 'eddyhm cold-center';
             }
         });
 
     enter.append("rect")
         .attr("x", function (d) {
-            return d.x;
+            return d['centerProj'][0];
         })
         .attr("y", function (d) {
-            return d.y;
+            return d['centerProj'][1];
         })
         .attr("width", function (d) {
-            var xadd = projection([d.lon + resolution, d.lat])[0];
-            return xadd - d.x;
+            var xadd = projection([d['center'][0] + resolution, d['center'][1]])[0];
+            return xadd - d['centerProj'][0];
         })
         .attr("height", function (d) {
-            var yadd = projection([d.lon, d.lat + resolution])[1];
-            return d.y - yadd;
-        })
-        .transition() //启动添加元素时的过渡
-        .duration(1500) //设定过渡时间
-        .style("fill", function (d) {
-            return colorInterp(linear(d['surf_el']));
+            var yadd = projection([d['center'][0], d['center'][1] + resolution])[1];
+            return d['centerProj'][1] - yadd;
         })
         .attr("class", function (d) {
-            if (d['eddy'] == WARMEDDYCENTER) {
-                return 'hm warm-center';
+            if (d['type'] == 'warm') {
+                return 'eddyhm warm-center';
             }
-            else if (d['eddy'] == WARMEDDYSCALE) {
-                return 'hm warm-eddy';
-            }
-            else if (d['eddy'] == COLDEDDYCENTER) {
-                return 'hm cold-center';
-            }
-            else if (d['eddy'] == COLDEDDYSCALE) {
-                return 'hm cold-eddy';
+            else {
+                return 'eddyhm cold-center';
             }
         });
 
-    exit.transition() //启动添加元素时的过渡
-        .duration(1500) //设定过渡时间
-        .remove();
+    exit.remove();
 }
 
-function drawEddy(dataInfo) {
+function drawEddyBoundaryAndCenter(dataInfo) {
     $.ajax({
         url: "/api/get_data_eddy",
         type: 'POST',
         data: JSON.stringify(dataInfo), //必须是字符串序列
         contentType: 'application/json; charset=UTF-8', //必须指明contentType，否则py会当表单处理，很麻烦
         success: function (data, status) {
-            curEddyData = JSON.parse(data);
-            var minmax = d3.extent(curEddyData, function (d) {
-                return +d['surf_el'];
-            });
-            minmaxWithAttr['surf_el'] = minmax;
-            linearsWithAttr['surf_el'] = d3.scale.linear()
-                .domain(minmax)
-                .range([0, 1]);
+            curEddyData = data;
             curEddyData.forEach(function (d) {
-                var xy = projection([d.lon, d.lat]);
-                d.x = xy[0];
-                d.y = xy[1];
+                d['centerProj'] = projection(d['center']);
+                pointsProj = [];
+                d['points'].forEach(function (dd) {
+                    pointsProj.push(projection(dd));
+                });
+                d['boundaryProj'] = pointsProj;
             });
-            printColorBar();
-            printEddy(curEddyData);
+            printEddyBoundaryAndCenter(curEddyData);
         }
     });
 }
+
+
+

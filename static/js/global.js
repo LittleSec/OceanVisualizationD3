@@ -9,6 +9,7 @@ var hmChartg = hmChartsvg.append("g");
 var hmBrushg = hmChartsvg.append("g").attr("class", "hmbrush");
 var quiverChart = hmChartsvg.append("g");
 var eddyChart = hmChartsvg.append("g").attr("class", "eddysG");
+var eddyBoundaryChart = hmChartsvg.append("g").attr("class", "eddyBG");
 var colorbarSvg = d3.select("#colorbar svg");
 var twoYScatterChart = dc.compositeChart("#scatter");
 var parallelChart = d3.select("#parallel");
@@ -25,12 +26,12 @@ var cur1d1dData, cur1x1yData, curEddyData,
     curlonlat = [128.24, 24.4];
 var curlonrange = [124.72, 126.48],
     curlatrange = [22.0, 23.84];
-var curOWdata, curOWstd, curOWcoef = 0.1, curScale = 40;
+var curOWdata, curOWstd, curOWcoef = 0.2, curScale = 40;
 
 // 系统固定参数
 var dateDomain = [new Date(2014, 6, 1), new Date(2017, 8, 30)]; // 月份从0月开始。。。。
 var depthDomain = ['0.0m', '8.0m', '15.0m', '30.m', '50.0m'];
-var numberFormat = d3.format(".2f");
+var numberFormat = d3.format(".3g");
 var dateFormat = d3.time.format("%Y-%m-%d");
 var resolution = 0.09; // 2/25 + exp，以免有间隙
 
@@ -46,13 +47,11 @@ var projection = d3.geo.mercator() // 定义地图的投影
 var linearsWithAttr = {}; // 存放当前时刻和深度数据中各个属性的值的线性比例尺，用于着色
 var minmaxWithAttr = {}; // 存放各个属性的最大最小值
 var colorBarHeigth = 200; //也意味着共画几个矩形，一个矩形固定高度为1px
-var linearsOW = [d3.scale.linear().range([0, 0.5]), d3.scale.linear().range([0.5, 1])]; // ow专属线性尺（们）
 
 // 双Y轴图参数
 var y2attr1 = 'salinity', y2attr2 = 'water_temp';
 
 // 涡旋轮播
-
 var isAutoPlay = false; // 区分是自动播放模式还是手动选择模式
 var carousel;
 var dateIns;
@@ -65,7 +64,7 @@ layui.use('carousel', function(){
         arrow: 'hover',
         indicator: 'none',
         autoplay: isAutoPlay,
-        interval: 4000
+        interval: 6000
     });
 });
 // 涡旋标记
@@ -75,7 +74,9 @@ var COLDEDDYCENTER = 2
 var WARMEDDYSCALE = 3
 var COLDEDDYSCALE = 4
 var BLACKGROUND = 5
-
+// 涡旋边界路径生成器
+var eddyBoundaryPath = d3.svg.line().interpolate("basis-closed");
+// var eddyBoundaryPath = d3.svg.line().interpolate("cardinal-closed").tension(0.5);
 
 // 时间选择器
 laydate.render({
@@ -115,6 +116,6 @@ var attrInfo = {
         'units': 'm'
     },
     'ow': {
-        'units': 's^-2'
+        'units': '×1e10 s^-2'
     }
 };

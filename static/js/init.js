@@ -4,6 +4,9 @@ laydate.render({
         curdate = value;
         setCarouselItem()
         redrawGroup1();
+        if($("input[type=checkbox][value=eddy]").is(':checked')){
+            changeDateEddy();
+        }
         // console.log(value); //得到日期生成的值，如：2017-08-18
         // console.log(date); //得到日期时间对象：{year: 2017, month: 8, date: 18, hours: 0, minutes: 0, seconds: 0}
         // console.log(endDate); //得结束的日期时间对象，开启范围选择（range: true）才会返回。对象成员同上。
@@ -14,7 +17,6 @@ var requestDataInfo = {
     "time": curdate,
     "depth": curdepth,
 };
-curattr = "surf_el";
 drawGeoMap(hmChartg);
 // var colorbarSvg = d3.select("#colorbar svg"); //or false
 changeDepthOrDate(requestDataInfo);
@@ -62,7 +64,6 @@ $('#ssh-slider').jRange({
     showLabels: true,
     snap: true,
     ondragend: function (value){
-        console.log('ssh scale: ' + value);
         changeSSHextScale(value);
     }
 });
@@ -108,7 +109,11 @@ $("button.play-stop-btn").click(function () {
         dateIns.reload({
             autoplay: isAutoPlay
         });
+        $("input.attroption, input.attoption-special").attr("disabled", "disabled").parent().css('color', 'grey');
+        $("input#idate-pick").attr("disabled", "disabled").css('color', 'grey');
+        $("input.depthoption").attr("disabled", "disabled").parent().css('color', 'grey');
         $('#ssh-slider').jRange('disable');
+        $('input.date-space-option').attr("disabled", "disabled").parent().css('color', 'grey');
     }
     else {
         span.attr("class", "glyphicon glyphicon-play");
@@ -118,12 +123,12 @@ $("button.play-stop-btn").click(function () {
         dateIns.reload({
             autoplay: isAutoPlay
         });
+        $("input.attroption, input.attoption-special").removeAttr("disabled", "disabled").parent().css('color', '');
+        $("input#idate-pick").removeAttr("disabled").css('color', ''); 
+        $("input.depthoption").removeAttr("disabled").parent().css('color', '');
         $('#ssh-slider').jRange('enable');
-        var requestDataInfo = {
-            "time": curdate,
-            "depth": curdepth,
-        };
-        UpDateRedrawScaAndPara(requestDataInfo);
+        $('input.date-space-option').removeAttr('disabled').parent().css('color', '');
+        UpDateRedrawScaAndPara();
     }
 });
 
@@ -141,21 +146,15 @@ $("input[type=checkbox][value=eddy]").change(function () {
         $('#ssh-slider').jRange('enable');
         $('.eddy-block').children('*').css('color', '');
         setCarouselItem();
-        $("input.depthoption").attr("disabled", "disabled").css('color', 'grey');
         $("input[type=checkbox][value=quiver]").attr("disabled", "disabled").css('color', 'grey');
+        eddyBoundaryChart.selectAll('rect.eddyhm, path.eddy-line').style("visibility", "visible");
     } else {
         // $("div.eddy-block").children("*").attr("disabled", "disabled");        
         $("div.eddy-block input.date-space-option").attr("disabled", "disabled");
         $("div.eddy-block button").attr("disabled", "disabled");
         $('#ssh-slider').jRange('disable');
         $('.eddy-block').children('*').css('color', 'grey');
-        $("input.depthoption").removeAttr("disabled").css('color', '');
         $("input[type=checkbox][value=quiver]").removeAttr("disabled").css('color', '');
-        // 绘图，以下是eddy模式下不请求无关数据情况下重新绘图的代码
-        var requestDataInfo = {
-            "time": curdate,
-            "depth": curdepth,
-        };
-        changeDepthOrDate(requestDataInfo);
+        eddyBoundaryChart.selectAll('rect.eddyhm, path.eddy-line').style("visibility", "hidden");
     }
 });

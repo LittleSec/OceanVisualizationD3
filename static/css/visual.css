@@ -89,9 +89,10 @@
 
 /* 冷涡 */
 .cold-eddy{
-    /* stroke: blue;
-    stroke-width: 1px; */
-    opacity: 0.8;
+    stroke: blue;
+    stroke-width: 1px;
+    /* opacity: 0.8; */
+    fill: none;
 }
 .cold-center{
     fill: blue;
@@ -101,9 +102,10 @@
 
 /* 暖涡 */
 .warm-eddy{
-    /* stroke: red;
-    stroke-width: 1px; */
-    opacity: 0.8;    
+    stroke: red;
+    stroke-width: 1px;
+    /* opacity: 0.8;    */
+    fill: none; 
 }
 .warm-center{
     fill: red;
