@@ -51,12 +51,13 @@ function nonzero_min(chart) {
 // 更改主属性后重新绘制框选时间的图
 function changeTimeRangeChart() {
     var tmpattr = curattr;
-    if (curattr in ['ow']) {
+    if ($.inArray(curattr, ['ow']) != -1) {
         tmpattr = 'surl_el';
     }
     var y3group = dateDimension.group().reduceSum(function (d) {
         return +d[tmpattr];
     });
+    
     timeRangeChart
         .dimension(dateDimension)
         .group(y3group)
@@ -64,13 +65,12 @@ function changeTimeRangeChart() {
         .round(d3.time.month.round)
         .xUnits(d3.time.months);
     timeRangeChart.yAxis().ticks(0);
-    console.log('changeTimeRangeChart');
     timeRangeChart.redraw();
 }
 
 function redrawLineCharts() {
     var tmpattr = curattr;
-    if (curattr in ['ow']) {
+    if ($.inArray(curattr, ['ow']) != -1) {
         tmpattr = 'surl_el';
     }
     depthDimension.filter(parseFloat(curdepth));
@@ -113,7 +113,7 @@ function redrawLineCharts() {
             depthTendencyCharts.redraw();
         });
     });
-    // timeTendencyCharts.yAxis().tickFormat(numberFormat);
+    timeTendencyCharts.yAxis().tickFormat(numberFormat);
 
     timeRangeChart
         .dimension(dateDimension)
@@ -155,6 +155,7 @@ function redrawLineCharts() {
         ])
         .yAxisLabel(y2attr1)
         .rightYAxisLabel(y2attr2);
+    depthTendencyCharts.yAxis().tickFormat(numberFormat);
 
     depthTendencyCharts.on("renderlet", function (chart) {
         chart.selectAll("circle.dot").on("click", function (d) {
