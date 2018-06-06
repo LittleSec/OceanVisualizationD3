@@ -61,7 +61,7 @@ def get_data_quiver():
     }
     '''
     dataInfo = request.json
-    print(dataInfo)
+    print('now is get_data_quiver: ' + str(dataInfo))
     fileName = '/'.join([ROOTPATH, 'quiver', dataInfo["depth"], dataInfo["time"]+'.csv'])
     df = pd.read_csv(fileName)
     # df['lon1'] = df['lon'] + df['water_u']
@@ -80,14 +80,14 @@ def get_data_1date1depth():
     ow参数进行*1e10处理
     '''
     dataInfo = request.json
-    print(dataInfo)
+    print('now is get_data_1data1depth: ' + str(dataInfo))
     if not "depth" in dataInfo:
         dataInfo["depth"] = '0.0m'
     fileName = '/'.join([ROOTPATH, dataInfo["depth"], dataInfo["time"]+'.csv'])
-    df = pd.read_csv(fileName).round(6)
-    df['velocity'] = np.sqrt(df['water_u']**2 + df['water_v']**2)
+    df = pd.read_csv(fileName)
+    df['velocity'] = np.sqrt(df['water_u'].round(6)**2 + df['water_v'].round(6)**2)
     df['ow'] = df['ow'] * OWMAGNITUDE
-    return df.to_json(orient='records')
+    return df.round(6).to_json(orient='records')
 
 # 计算ow标准偏差
 @app.route('/api/get_ow_std', methods=['POST'])
@@ -100,7 +100,7 @@ def get_std():
     }
     '''
     dataInfo = request.json
-    print(dataInfo)
+    print('now is get_ow_std: ' + str(dataInfo))
     if not "depth" in dataInfo:
         dataInfo["depth"] = '0.0m'
     fileName = '/'.join([ROOTPATH, 'ow_grid', dataInfo["depth"], dataInfo["time"]+'.csv'])
@@ -153,8 +153,6 @@ def get_data_bylonlat():
         df1['velocity'] = np.sqrt(df1['water_u']**2 + df1['water_v']**2)
         return df1.to_json(orient='records')
 
-# 以下涡旋检查模块参考ncinterp repo的nctocsv-nointerp-branch
-# 若有不同，以此为准
 def cmpGreater(a, b):
     return a > b
 
@@ -351,7 +349,7 @@ def eddyBoundary(centerI, centerJ, lonList, latList, threshold, srcSSH, eddyType
         j -= 1
     pointsList.append([lonList[j], latList[i]])
 
-    return {"points": pointsList, "center": [lonList[j], latList[i]], "type": eddyType}
+    return {"points": pointsList, "center": [lonList[centerJ], latList[centerI]], "type": eddyType}
 
 @app.route('/api/get_data_eddy', methods=['POST'])
 def get_data_eddy():
