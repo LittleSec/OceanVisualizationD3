@@ -1,11 +1,17 @@
 laydate.render({
     elem: "#date-pick",
-    done: function (value, date, endDate) {
+    min: "2014-07-01",
+    max: "2017-09-30",
+    value: curdate,
+    btns: ['confirm'],
+    done: function (value, date) {
         curdate = value;
         setCarouselItem()
-        redrawGroup1();
         if($("input[type=checkbox][value=eddy]").is(':checked')){
             changeDateEddy();
+        }
+        else{
+            redrawGroup1();
         }
         // console.log(value); //得到日期生成的值，如：2017-08-18
         // console.log(date); //得到日期时间对象：{year: 2017, month: 8, date: 18, hours: 0, minutes: 0, seconds: 0}
@@ -19,8 +25,7 @@ var requestDataInfo = {
 };
 drawGeoMap(hmChartg);
 // var colorbarSvg = d3.select("#colorbar svg"); //or false
-changeDepthOrDate(requestDataInfo);
-drawQuiver(requestDataInfo);
+changeDepthOrDate(requestDataInfo); // 已经把quiver也画了
 hmBrushg.call(brushHM);
 $("input[type=checkbox][value=brush]").change(function () {
     if ($(this).is(':checked')) {
@@ -48,7 +53,12 @@ function redrawGroup1() {
 
 $("input.depthoption").change(function () {
     curdepth = this.value;
-    redrawGroup1();
+    if($("input[type=checkbox][value=eddy]").is(':checked')){
+        changeDateEddy();
+    }
+    else{
+        redrawGroup1();
+    }
 });
 
 var sliderwidth = $(".attr-selector").width() * 0.9;
@@ -67,16 +77,6 @@ $('#ssh-slider').jRange({
         changeSSHextScale(value);
     }
 });
-
-// $('input.attroption,input.attroption-special').change(function () {
-//     // 这个option的值肯定不会是ow或sla，因此不需要合理性判断
-//     if (this.value == 'ow') {
-//         $('#ow-slider').jRange('enable');
-//     }
-//     else {
-//         $('#ow-slider').jRange('disable');
-//     }
-// });
 
 $("#reset-brush1").css("visibility", "hidden");
 
@@ -110,7 +110,7 @@ $("button.play-stop-btn").click(function () {
             autoplay: isAutoPlay
         });
         $("input.attroption, input.attoption-special").attr("disabled", "disabled").parent().css('color', 'grey');
-        $("input#idate-pick").attr("disabled", "disabled").css('color', 'grey');
+        $("input#date-pick").attr("disabled", "disabled").css('color', 'grey');
         $("input.depthoption").attr("disabled", "disabled").parent().css('color', 'grey');
         $('#ssh-slider').jRange('disable');
         $('input.date-space-option').attr("disabled", "disabled").parent().css('color', 'grey');
@@ -124,7 +124,7 @@ $("button.play-stop-btn").click(function () {
             autoplay: isAutoPlay
         });
         $("input.attroption, input.attoption-special").removeAttr("disabled", "disabled").parent().css('color', '');
-        $("input#idate-pick").removeAttr("disabled").css('color', ''); 
+        $("input#date-pick").removeAttr("disabled").css('color', 'grey');
         $("input.depthoption").removeAttr("disabled").parent().css('color', '');
         $('#ssh-slider').jRange('enable');
         $('input.date-space-option').removeAttr('disabled').parent().css('color', '');
@@ -146,7 +146,7 @@ $("input[type=checkbox][value=eddy]").change(function () {
         $('#ssh-slider').jRange('enable');
         $('.eddy-block').children('*').css('color', '');
         setCarouselItem();
-        $("input[type=checkbox][value=quiver]").attr("disabled", "disabled").css('color', 'grey');
+        // $("input[type=checkbox][value=quiver]").prop('checked', true).attr("disabled", "disabled").css('color', 'grey');
         eddyBoundaryChart.selectAll('rect.eddyhm, path.eddy-line').style("visibility", "visible");
     } else {
         // $("div.eddy-block").children("*").attr("disabled", "disabled");        
@@ -154,7 +154,7 @@ $("input[type=checkbox][value=eddy]").change(function () {
         $("div.eddy-block button").attr("disabled", "disabled");
         $('#ssh-slider').jRange('disable');
         $('.eddy-block').children('*').css('color', 'grey');
-        $("input[type=checkbox][value=quiver]").removeAttr("disabled").css('color', '');
+        // $("input[type=checkbox][value=quiver]").removeAttr("disabled").css('color', '');
         eddyBoundaryChart.selectAll('rect.eddyhm, path.eddy-line').style("visibility", "hidden");
     }
 });

@@ -49,7 +49,7 @@ var minmaxWithAttr = {}; // 存放各个属性的最大最小值
 var colorBarHeigth = 200; //也意味着共画几个矩形，一个矩形固定高度为1px
 
 // 双Y轴图参数
-var y2attr1 = 'salinity', y2attr2 = 'water_temp';
+var y2attr1 = 'water_temp', y2attr2 = 'salinity';
 
 // 涡旋轮播
 var isAutoPlay = false; // 区分是自动播放模式还是手动选择模式
@@ -77,15 +77,6 @@ var BLACKGROUND = 5
 // 涡旋边界路径生成器
 var eddyBoundaryPath = d3.svg.line().interpolate("basis-closed");
 // var eddyBoundaryPath = d3.svg.line().interpolate("cardinal-closed").tension(0.5);
-
-// 时间选择器
-laydate.render({
-    elem: "#date-pick",
-    min: "2014-07-01",
-    max: "2017-09-30",
-    value: curdate,
-    btns: ['confirm']
-});
 
 var attrInfo = {
     'lon': {
