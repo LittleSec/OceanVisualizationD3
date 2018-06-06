@@ -200,7 +200,6 @@ function addTooltip() {
     hmChartg.selectAll("rect.hm")
         .on("click", function (d) {
             curlonlat = [d.lon, d.lat];
-            console.log(curlonlat);
             var reqDataInfo = {
                 'lon': curlonlat[0],
                 'lat': curlonlat[1]
@@ -233,9 +232,8 @@ function addTooltip() {
             d3.select(this).style("stroke", "none");
             // d3.select(".hmtooltip").style("opacity", 0.0);
         });
-
 }
-
+ 
 colorbarSvg.on("click", function () {
     d3.select(".hmtooltip").style("opacity", 0.0);
 })

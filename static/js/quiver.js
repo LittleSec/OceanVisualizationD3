@@ -17,11 +17,16 @@ function drawQuiver(dataInfo) {
                 e.y2 = loc2[1];
             });
             printQuiver(data);
+            if(!$("input[type=checkbox][value=quiver]").prop('checked')){
+                d3.selectAll("line.arrow").style("opacity", 0.0);
+            }
             $("input[type=checkbox][value=quiver]").change(function(){
                 if($(this).is(':checked')){
                     d3.selectAll("line.arrow").style("opacity", 1.0);
+                    $('input[type=checkbox][value=quiver]').prop('checked', true);
                 }else{
                     d3.selectAll("line.arrow").style("opacity", 0.0);
+                    $('input[type=checkbox][value=quiver]').prop('checked', false);
                 }
             });
         }
