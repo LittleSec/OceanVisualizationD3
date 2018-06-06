@@ -45,10 +45,7 @@ function setCarouselItem() {
         curdate = obj.item.html();
         // console.log(obj.item.html()); //当前条目的元素对象
         // 更改当前日期选择器中日期
-        laydate.render({
-            elem: '#date-pick',
-            value: curdate
-        });
+        $('#date-pick').val(curdate);
         changeDateEddy();
     });
 }
@@ -162,6 +159,14 @@ function printEddyBoundaryAndCenter(data) {
             else {
                 return 'eddyhm cold-center';
             }
+        })
+        .on("click", function (d) {
+            curlonlat = [d['center'][0], d['center'][1]];
+            var reqDataInfo = {
+                'lon': curlonlat[0],
+                'lat': curlonlat[1]
+            };
+            change1x1y(reqDataInfo);
         });
 
     enter.append("rect")
@@ -186,6 +191,14 @@ function printEddyBoundaryAndCenter(data) {
             else {
                 return 'eddyhm cold-center';
             }
+        })
+        .on("click", function (d) {
+            curlonlat = [d['center'][0], d['center'][1]];
+            var reqDataInfo = {
+                'lon': curlonlat[0],
+                'lat': curlonlat[1]
+            };
+            change1x1y(reqDataInfo);
         });
 
     exit.remove();
