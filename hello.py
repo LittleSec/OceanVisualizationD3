@@ -19,6 +19,7 @@ def hello_world():
 # 以下变量用于合法性检查，暂时无用
 ROOTPATH = './oceandata'  # 路径和文件名规律: ./oceandata/depth/2014-07-01.csv
 SSH_GRID_PATH = 'surf_el_grid'
+OW_GRID_PATH = 'ow_grid/0.0m'
 RESULATION_DEFAULT = '0p08'  # 默认分辨率
 ATTR_DEFAULT_1 = 'surf_el'  # 默认海洋属性1 surf_el
 ATTR_DEFAULT_2 = 'water_temp'  # 默认海洋属性2 water_temp
@@ -96,7 +97,7 @@ def get_std():
     request.json是个dict, 下面是个例子
     {
         "time": '2016-01-01',
-        (option)"depth": "0.0m"(若缺失则默认0.0m)        
+        (option)"depth": "0.0m"(若缺失则默认0.0m)
     }
     '''
     dataInfo = request.json
@@ -128,7 +129,7 @@ def get_data_bylonlat():
         df = pd.read_csv(tarFile)
         df['velocity'] = np.sqrt(df['water_u']**2 + df['water_v']**2)
         if 'sla' in df.columns.values:
-            df.drop(columns=['sla']).to_csv(tarFile, index=False, na_rep='NaN')            
+            df.drop(columns=['sla']).to_csv(tarFile, index=False, na_rep='NaN')
         return df.to_json(orient='records')
     else:
         queryExpr = 'lon=={0} and lat=={1}'.format(dataInfo['lon'], dataInfo['lat'])
@@ -158,6 +159,21 @@ def cmpGreater(a, b):
 
 def cmpLess(a, b):
     return a < b
+
+def isEddyCenter(ow, lon, lat, owlonList, owlatList, radius):
+    owThreshold = 0.2 # 0.2 * std
+    owI = np.where(owlatList==lat)[0][0]
+    owJ = np.where(owlonList==lon)[0][0]
+    if owI.size == 0 or owJ.size == 0: # 该点不在ow的计算范围内
+        return False
+    if np.isnan(ow[owI][owJ]): # 该点ow为NaN
+        return False
+    if ow[owI][owJ] > -owThreshold * np.nanstd(ow):
+        return False
+    if np.nanmin(ow[owI-radius:owI+radius+1, owJ-radius:owJ+radius+1]) == ow[owI][owJ]:
+        return True
+    else:
+        return False
 
 def sshthreshold(centerI, centerJ, radius, lonList, latList, srcSSH, tarSSH, eddyType):
     '''
@@ -193,7 +209,7 @@ def sshthreshold(centerI, centerJ, radius, lonList, latList, srcSSH, tarSSH, edd
     while j < len(lonList)-1: # 右3
         if np.isnan(srcSSH[centerI][j+1]):
             break
-        if cmp(srcSSH[centerI][j+1], srcSSH[centerI][j]): 
+        if cmp(srcSSH[centerI][j+1], srcSSH[centerI][j]):
             break
         j += 1
     thresholdList.append(srcSSH[centerI][j])
@@ -206,7 +222,7 @@ def sshthreshold(centerI, centerJ, radius, lonList, latList, srcSSH, tarSSH, edd
             break
         i += 1
     thresholdList.append(srcSSH[i][centerJ])
-    
+
     i = centerI+radius
     j = centerJ-radius
     while i < len(latList)-1 and j > 0: # 左下5
@@ -239,7 +255,7 @@ def sshthreshold(centerI, centerJ, radius, lonList, latList, srcSSH, tarSSH, edd
         i -= 1
         j += 1
     thresholdList.append(srcSSH[i][j])
-    
+
     i = centerI+radius
     j = centerJ+radius
     while j < len(lonList)-1 and i < len(latList)-1: # 右下8
@@ -250,12 +266,12 @@ def sshthreshold(centerI, centerJ, radius, lonList, latList, srcSSH, tarSSH, edd
         i += 1
         j += 1
     thresholdList.append(srcSSH[i][j])
-    
+
     if eddyType == 'warm':
         threshold = np.nanmax(thresholdList)
     else:
         threshold = np.nanmin(thresholdList)
-    
+
     return threshold
 
 def eddyBoundary(centerI, centerJ, lonList, latList, threshold, srcSSH, eddyType):
@@ -371,28 +387,36 @@ def get_data_eddy():
     srcSSH = sshcsv[1:, 1:]
     tarSSH = np.where(np.isnan(srcSSH), 0, BLACKGROUND)
     radius = scale // 2
-    boundaryList = []    
+    boundaryList = []
+
+    owcsv = np.genfromtxt('/'.join([ROOTPATH, OW_GRID_PATH, dataInfo['time']+'.csv']), delimiter=',')
+    owlonList = owcsv[0, 1:]
+    owlatList = owcsv[1:, 0]
+    ow = owcsv[1:, 1:]
+
     df1 = pd.read_csv('/'.join([ROOTPATH, DEPTH_DEFAULT, dataInfo['time']+'.csv']))
+    df1['velocity'] = np.sqrt(df1['water_u'].round(6)**2 + df1['water_v'].round(6)**2)
     for i in range(radius, len(sshlat)-radius):
         for j in range(radius, len(sshlon)-radius):
             if np.isnan(srcSSH[i][j]):
                 continue
+            # judge velocity
+            queryExpr = 'lon=={0} and lat=={1}'.format(sshlon[j], sshlat[i])
+            qdf = df1.query(queryExpr)
+            if qdf.index.empty: # 该点没有velocity
+                velocity = 0 # to be discussed
+            else:
+                velocity = qdf['velocity'].values[0]
+            if velocity < 0.2:
+                continue
             # 暖涡
             if np.nanmax(srcSSH[i-radius:i+radius+1, j-radius:j+radius+1]) == srcSSH[i][j]:
-                queryExpr = 'lon=={0} and lat=={1}'.format(sshlon[j], sshlat[i])
-                qdf = df1.query(queryExpr)
-                if qdf.index.empty: # 该点没有ow
-                    continue
-                if qdf['ow'].values[0] < 0.2*np.nanstd(df1['ow']):
+                if isEddyCenter(ow, sshlon[j], sshlat[i], owlonList, owlatList, radius-1):
                     threshold = sshthreshold(i, j, radius, sshlon, sshlat, srcSSH, tarSSH, 'warm')
                     boundaryList.append(eddyBoundary(i, j, sshlon, sshlat, threshold, srcSSH, 'warm'))
             # 冷涡
             elif np.nanmin(srcSSH[i-radius:i+radius+1, j-radius:j+radius+1]) == srcSSH[i][j]:
-                queryExpr = 'lon=={0} and lat=={1}'.format(sshlon[j], sshlat[i])
-                qdf = df1.query(queryExpr)
-                if qdf.index.empty:
-                    continue
-                if qdf['ow'].values[0] < 0.2*np.nanstd(df1['ow']):
+                if isEddyCenter(ow, sshlon[j], sshlat[i], owlonList, owlatList, radius-1):
                     threshold = sshthreshold(i, j, radius, sshlon, sshlat, srcSSH, tarSSH, 'cold')
                     boundaryList.append(eddyBoundary(i, j, sshlon, sshlat, threshold, srcSSH, 'cold'))
     return jsonify(boundaryList)
