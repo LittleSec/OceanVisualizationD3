@@ -160,15 +160,18 @@ def cmpGreater(a, b):
 def cmpLess(a, b):
     return a < b
 
-def isEddyCenter(ow, lon, lat, owlonList, owlatList, radius):
+def isEddyCenter(ow, lon, lat, owlonList, owlatList, owstd, radius=1):
     owThreshold = 0.2 # 0.2 * std
-    owI = np.where(owlatList==lat)[0][0]
-    owJ = np.where(owlonList==lon)[0][0]
-    if owI.size == 0 or owJ.size == 0: # 该点不在ow的计算范围内
+    owI = np.where(owlatList==lat)[0]
+    owJ = np.where(owlonList==lon)[0]
+    if owI.size != 0 or owJ.size != 0: # 该点不在ow的计算范围内
+        owI = owI[0]
+        owJ = owJ[0]
+    else:
         return False
     if np.isnan(ow[owI][owJ]): # 该点ow为NaN
         return False
-    if ow[owI][owJ] > -owThreshold * np.nanstd(ow):
+    if ow[owI][owJ] > -owThreshold * owstd:
         return False
     if np.nanmin(ow[owI-radius:owI+radius+1, owJ-radius:owJ+radius+1]) == ow[owI][owJ]:
         return True
@@ -393,9 +396,10 @@ def get_data_eddy():
     owlonList = owcsv[0, 1:]
     owlatList = owcsv[1:, 0]
     ow = owcsv[1:, 1:]
+    owstd = np.nanstd(ow)
 
     df1 = pd.read_csv('/'.join([ROOTPATH, DEPTH_DEFAULT, dataInfo['time']+'.csv']))
-    df1['velocity'] = np.sqrt(df1['water_u'].round(6)**2 + df1['water_v'].round(6)**2)
+    df1['velocity'] = np.sqrt(df1['water_u']**2 + df1['water_v']**2)
     for i in range(radius, len(sshlat)-radius):
         for j in range(radius, len(sshlon)-radius):
             if np.isnan(srcSSH[i][j]):
@@ -407,16 +411,16 @@ def get_data_eddy():
                 velocity = 0 # to be discussed
             else:
                 velocity = qdf['velocity'].values[0]
-            if velocity < 0.2:
+            if velocity > 0.2:
                 continue
             # 暖涡
             if np.nanmax(srcSSH[i-radius:i+radius+1, j-radius:j+radius+1]) == srcSSH[i][j]:
-                if isEddyCenter(ow, sshlon[j], sshlat[i], owlonList, owlatList, radius-1):
+                if isEddyCenter(ow, sshlon[j], sshlat[i], owlonList, owlatList, owstd):
                     threshold = sshthreshold(i, j, radius, sshlon, sshlat, srcSSH, tarSSH, 'warm')
                     boundaryList.append(eddyBoundary(i, j, sshlon, sshlat, threshold, srcSSH, 'warm'))
             # 冷涡
             elif np.nanmin(srcSSH[i-radius:i+radius+1, j-radius:j+radius+1]) == srcSSH[i][j]:
-                if isEddyCenter(ow, sshlon[j], sshlat[i], owlonList, owlatList, radius-1):
+                if isEddyCenter(ow, sshlon[j], sshlat[i], owlonList, owlatList, owstd):
                     threshold = sshthreshold(i, j, radius, sshlon, sshlat, srcSSH, tarSSH, 'cold')
                     boundaryList.append(eddyBoundary(i, j, sshlon, sshlat, threshold, srcSSH, 'cold'))
     return jsonify(boundaryList)
