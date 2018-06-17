@@ -83,20 +83,47 @@
 
 /* 滑动条 */
 .slider-container{
-    padding-top: 0.5em;
+    padding-top: 1.5em;
     padding-left: 1em;
 }
 
 /* 冷涡 */
 .cold-eddy{
     stroke: blue;
-    stroke-width: 1px;
+    stroke-width: 1.5px;
+    /* opacity: 0.8; */
     fill: none;
+}
+.cold-center{
+    fill: blue;
+    stroke: blue;
+    stroke-width: 1px;
 }
 
 /* 暖涡 */
 .warm-eddy{
     stroke: red;
+    stroke-width: 1.5px;
+    /* opacity: 0.8;    */
+    fill: none; 
+}
+.warm-center{
+    fill: red;
+    stroke: red;
     stroke-width: 1px;
-    fill: none;
+}
+
+/* 轮播条样式 官方实例中中通过审查元素发现其样式写在一个html头部 */
+div[carousel-item]>*{
+    text-align: center;
+    font-size: 1em;
+    line-height: 80px; /* 垂直居中的原理是设置line-height与div高度一致 */
+    color: #fff;
+}
+/* 为了区分效果 */
+div[carousel-item]>*:nth-child(2n){
+    background-color: #5FB878;
+}
+div[carousel-item]>*:nth-child(2n+1){
+    background-color: #009688;
 }

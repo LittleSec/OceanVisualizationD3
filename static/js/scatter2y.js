@@ -14,20 +14,17 @@ function draw2yScatter() {
     ndxlatdim = ndx1d1dData.dimension(function (d) {
         return +d.lat;
     });
-    $("#reset-brush1").click(function(){
-        resetBrushed1();
-    });
-    twoYScatterChart.margins({ top: 30, right: 30, bottom: 30, left: 30 })
+    twoYScatterChart.margins({ top: 50, right: 30, bottom: 30, left: 30 })
         .shareTitle(false).elasticY(true)
         .legend(dc.legend().x(70).y(10).itemHeight(13).gap(5))
-        .brushOn(false).xAxis().ticks(5);
+        .brushOn(false);
     twoYScatterChart.yAxis().ticks(5);
     print2yScatter();
 }
 
 function print2yScatter() {
     var tmpattr = curattr;
-    if(curattr in ['ow']){
+    if($.inArray(curattr, ['ow']) != -1){
         tmpattr = 'surl_el';
     }
     xdim = ndx1d1dData.dimension(function (d) {
@@ -42,7 +39,7 @@ function print2yScatter() {
     xLgroup = xLeftdim.group();
     xRgroup = xRightdim.group();
     var xllabel = tmpattr + ' -- ' + y2attr1;
-    console.log('y2attr1: ' + y2attr1);
+    // console.log('y2attr1: ' + y2attr1);
     var xrlabel = tmpattr + ' -- ' + y2attr2;
     twoYScatterChart
         .transitionDuration(1000)
@@ -67,6 +64,7 @@ function print2yScatter() {
                 })
         ])
         .xAxisLabel(tmpattr).yAxisLabel(y2attr1).rightYAxisLabel(y2attr2);
+    twoYScatterChart.yAxis().tickFormat(numberFormat);
     twoYScatterChart.render();
 }
 

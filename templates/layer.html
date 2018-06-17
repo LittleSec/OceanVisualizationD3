@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="../static/lib/css/dc.css">
     <link rel="stylesheet" href="../static/lib/css/jquery.range.css">
     <link rel="stylesheet" href="../static/css/visual.css" />
+    <link rel="stylesheet" href="../static/lib/layui/css/layui.css" media="all">
     <script src="../static/lib/js/jquery-3.3.1.js" type="text/javascript"></script>
     <script src="../static/lib/laydate-master/src/laydate.js" type="text/javascript"></script>
     <script src="../static/lib/js/jquery.range.js" type="text/javascript"></script>
@@ -73,12 +74,12 @@
                                                     <input class="attroption" type="radio" name="optionsRadios" value="water_v"> water_v
                                                 </label>
                                                 <label class="radio-inline">
-                                                    <input type="checkbox" name="optionsRadios" value="quiver" checked> quiver
+                                                    <input type="checkbox" value="quiver" checked> quiver
                                                 </label>
                                             </div>
                                             <div class="radio">
                                                 <label class="radio-inline">
-                                                    <input class="attroption" type="radio" name="optionsRadios" value="sla"> sla
+                                                    <input class="attroption" type="radio" name="optionsRadios" value="velocity"> velocity(composition)
                                                 </label>
                                                 <label class="radio-inline">
                                                     <input class="attroption-special" type="radio" name="optionsRadios" value="ow"> Okubo-Weiss
@@ -96,46 +97,73 @@
                                         <label for="">Depth</label>
                                         <div class="radio">
                                             <label class="radio-inline">
-                                                <input type="radio" class="depthoption" name="inlineRadioOptions" value="0.0m" checked> 0.0m
+                                                <input type="radio" class="depthoption" name="optionsRadios1" value="0.0m" checked> 0.0m
                                             </label>
                                             <label class="radio-inline">
-                                                <input type="radio" class="depthoption" name="inlineRadioOptions" value="8.0m"> 8.0m
+                                                <input type="radio" class="depthoption" name="optionsRadios1" value="8.0m"> 8.0m
                                             </label>
                                             <label class="radio-inline">
-                                                <input type="radio" class="depthoption" name="inlineRadioOptions" value="15.0m"> 15.0m
+                                                <input type="radio" class="depthoption" name="optionsRadios1" value="15.0m"> 15.0m
                                             </label>
                                             <label class="radio-inline">
-                                                <input type="radio" class="depthoption" name="inlineRadioOptions" value="30.0m"> 30.0m
+                                                <input type="radio" class="depthoption" name="optionsRadios1" value="30.0m"> 30.0m
                                             </label>
                                             <label class="radio-inline">
-                                                <input type="radio" class="depthoption" name="inlineRadioOptions" value="50.0m"> 50.0m
+                                                <input type="radio" class="depthoption" name="optionsRadios1" value="50.0m"> 50.0m
                                             </label>
                                         </div>
                                     </div>
                                     <div class="line-spacing col-xs-12 col-sm-12 col-md-12 col-lg-12" style="height: 2em;"></div>
-                                    <div class="ow-threshold col-xs-12 col-sm-12 col-md-12 col-lg-12">
-                                        <label for="">Okubo-Weiss</label>
-                                        <p>Deviation of the ow parameter:&nbsp;</p>
-                                        <p>Multiply a coefficient as a threshold:&nbsp;</p>
-                                        <div id="ow-slider" style="width: 100%;"></div>
+                                    <hr class="layui-bg-gray"><!-- 分割线 -->
+                                    <div class="line-spacing col-xs-12 col-sm-12 col-md-12 col-lg-12" style="height: 1em;"></div>
+                                    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                                        <label for="">Eddy</label>
+                                        &nbsp;&nbsp;
+                                        <input id="eddy-model" type="checkbox" value="eddy" />
                                     </div>
-                                    <div class="line-spacing col-xs-12 col-sm-12 col-md-12 col-lg-12" style="height: 2em;"></div>
-                                    <div class="line-spacing col-xs-12 col-sm-12 col-md-12 col-lg-12" style="height: 2em;"></div>
-                                    <div class="sla-threshold col-xs-12 col-sm-12 col-md-12 col-lg-12">
-                                        <label for="">SLA</label>
-                                        <p>Set a threshold:&nbsp;
-                                            <small>(units:&nbsp;cm)</small>
-                                        </p>
-                                        <div id="sla-slider" style="width: 100%;"></div>
-                                    </div>
-                                    <div class="line-spacing col-xs-12 col-sm-12 col-md-12 col-lg-12" style="height: 2em;"></div>
-                                    <div class="line-spacing col-xs-12 col-sm-12 col-md-12 col-lg-12" style="height: 2em;"></div>
-                                    <div class="ssh-extremum col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                                    <div class="line-spacing col-xs-12 col-sm-12 col-md-12 col-lg-12" style="height: 1em;"></div>
+                                    <div class="eddy-block ssh-extremum col-xs-12 col-sm-12 col-md-12 col-lg-12">
                                         <label for="">SSH extremum scale</label>
                                         <p>Set the size of the area for extremum:&nbsp;
                                             <small>(units:&nbsp;km)</small>
                                         </p>
                                         <div id="ssh-slider" style="width: 100%;"></div>
+                                    </div>
+                                    <div class="line-spacing col-xs-12 col-sm-12 col-md-12 col-lg-12" style="height: 2em;"></div>                                    
+                                    <div class="line-spacing col-xs-12 col-sm-12 col-md-12 col-lg-12" style="height: 2em;"></div>                                    
+                                    <div class="eddy-block date-space-selector col-xs-12 col-sm-12 col-md-12 col-lg-12">   
+                                        <label for="">Date Space</label><small>&nbsp;(units:&nbsp;Days)</small>
+                                        <div class="radio">
+                                            <label class="radio-inline">
+                                                <input type="radio" class="date-space-option" name="inlineRadioOptions" value="1"> 1
+                                            </label>
+                                            <label class="radio-inline">
+                                                <input type="radio" class="date-space-option" name="inlineRadioOptions" value="4" checked> 4
+                                            </label>
+                                            <label class="radio-inline">
+                                                <input type="radio" class="date-space-option" name="inlineRadioOptions" value="7"> 7 (Week)
+                                            </label>
+                                            <label class="radio-inline">
+                                                <input type="radio" class="date-space-option" name="inlineRadioOptions" value="15"> 15
+                                            </label>
+                                            <label class="radio-inline">
+                                                <input type="radio" class="date-space-option" name="inlineRadioOptions" value="30"> 30 (Month)
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="line-spacing col-xs-12 col-sm-12 col-md-12 col-lg-12" style="height: 1em;"></div>
+                                    <div class="eddy-block col-xs-2 col-sm-2 col-md-2 col-lg-2" style="line-height: 80px;">
+                                        <button type="button" class="play-stop-btn btn btn-success" aria-label="Left Align">
+                                            <span class="glyphicon glyphicon-play" aria-hidden="true"></span>
+                                        </button>
+                                    </div>
+                                    <div class="eddy-block col-xs-10 col-sm-10 col-md-10 col-lg-10">
+                                        <div class="layui-carousel" id="date-carousel" lay-filter="date-carousel">
+                                            <div carousel-item="">
+                                                <!-- 各 div -->
+                                                <div>enabled when eddy checked</div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -153,15 +181,16 @@
                                             <label class="checkbox">
                                                 <input type="checkbox" value="brush" checked> brush
                                             </label>
-                                        </div>                            
-                                        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">        
-                                            <button id="reset-brush1" type="button" class="btn btn-xs btn-success">Reset<br>Brush</button>
+                                        </div>
+                                        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                                            <button id="reset-brush1" onclick="resetBrushed1();" type="button" class="btn btn-xs btn-success">Reset
+                                                <br>Brush</button>
                                         </div>
                                         <!-- 这部分只是为留一个空隙，方便主视图居中，顺便把箭头的marker放这里。 -->
                                         <svg>
                                             <defs>
-                                                <marker id="arrow" markerUnits="strokeWidth" markerWidth="6" markerHeight="6" viewBox="0 0 6 6" refX="3" refY="3" orient="auto">
-                                                    <path d="M3,1 L6,3 L3,5 L4,3 L3,1" class="arrow" />
+                                                <marker id="arrow" markerUnits="strokeWidth" markerWidth="7" markerHeight="7" viewBox="0 0 7 7" refX="6" refY="4" orient="auto">
+                                                    <path d="M1,1 L7,4 L1,7 L6,4 L1,1" class="arrow" />
                                                 </marker>
                                             </defs>
                                         </svg>
@@ -214,6 +243,7 @@
                                             <option value="salinity">salinity</option>
                                             <option value="water_u">water_u</option>
                                             <option value="water_v">water_v</option>
+                                            <option value="velocity">velocity(composition)</option>
                                         </select>
                                     </div>
                                     <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 col-xs-offset-4 col-sm-offset-4 col-md-offset-4 col-lg-offset-4">
@@ -223,6 +253,7 @@
                                             <option value="water_temp">water_temp</option>
                                             <option value="water_u">water_u</option>
                                             <option value="water_v">water_v</option>
+                                            <option value="velocity">velocity(composition)</option>
                                         </select>
                                     </div>
                                 </div>
@@ -231,11 +262,11 @@
                             <div id="scatter" class="col-xs-12 col-sm-12 col-md-12 col-lg-12 yAxis2" style="padding-left: 0; padding-right: 0;">
                                 <!-- <svg width="100%" , height="100%"></svg> -->
                             </div>
-                            <h5 class="depth-title">depth line chart</h5>                            
+                            <h5 class="depth-title">depth line chart</h5>
                             <div id="depth-line-charts" class="col-xs-12 col-sm-12 col-md-12 col-lg-12 yAxis2" style="padding-left: 0; padding-right: 0;">
                                 <!-- <svg width="100%" , height="100%"></svg> -->
                             </div>
-                            <h5 class="time-title">time line chart</h5>                            
+                            <h5 class="time-title">time line chart</h5>
                             <div id="time-line-charts" class="col-xs-12 col-sm-12 col-md-12 col-lg-12 yAxis2" style="padding-left: 0; padding-right: 0;">
                                 <!-- <svg width="100%" , height="100%"></svg> -->
                             </div>
@@ -248,18 +279,17 @@
             </div>
         </div>
     </div>
-
+    <script src="../static/lib/layui/layui.js" type="text/javascript"></script>
     <script src="../static/js/resize.js" type="text/javascript"></script>
     <script src="../static/js/global.js" type="text/javascript"></script>
     <script src="../static/js/paraller-new.js" type="text/javascript"></script>
     <script src="../static/js/linechart2yaxis.js" type="text/javascript"></script>
     <script src="../static/js/scatter2y.js" type="text/javascript"></script>
     <script src="../static/js/brush.js" type="text/javascript"></script>
-    <script src="../static/js/heatmap.js" type="text/javascript"></script>    
+    <script src="../static/js/heatmap.js" type="text/javascript"></script>
     <script src="../static/js/quiver.js" type="text/javascript"></script>
-    <script src="../static/js/slider.js" type="text/javascript"></script>
+    <script src="../static/js/eddy.js" type="text/javascript"></script>
     <script src="../static/js/init.js" type="text/javascript"></script>
-
 </body>
 
 </html>

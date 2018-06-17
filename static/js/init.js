@@ -2,25 +2,30 @@ laydate.render({
     elem: "#date-pick",
     min: "2014-07-01",
     max: "2017-09-30",
-    value: "2014-07-01",
+    value: curdate,
     btns: ['confirm'],
-    done: function (value, date, endDate) {
-        changeDate(value);
+    done: function (value, date) {
+        curdate = value;
+        setCarouselItem()
+        if($("input[type=checkbox][value=eddy]").is(':checked')){
+            changeDateEddy();
+        }
+        else{
+            redrawGroup1();
+        }
         // console.log(value); //得到日期生成的值，如：2017-08-18
         // console.log(date); //得到日期时间对象：{year: 2017, month: 8, date: 18, hours: 0, minutes: 0, seconds: 0}
         // console.log(endDate); //得结束的日期时间对象，开启范围选择（range: true）才会返回。对象成员同上。
     }
-})
+});
 
 var requestDataInfo = {
     "time": curdate,
     "depth": curdepth,
 };
-curattr = "surf_el";
 drawGeoMap(hmChartg);
 // var colorbarSvg = d3.select("#colorbar svg"); //or false
-changeDepthOrDate(requestDataInfo);
-drawQuiver(requestDataInfo);
+changeDepthOrDate(requestDataInfo); // 已经把quiver也画了
 hmBrushg.call(brushHM);
 $("input[type=checkbox][value=brush]").change(function () {
     if ($(this).is(':checked')) {
@@ -37,6 +42,7 @@ var req1x1yDataInfo = {
 change1x1y(req1x1yDataInfo);
 
 function redrawGroup1() {
+    console.log('redrawGroup1');
     requestDataInfo = {
         "time": curdate,
         "depth": curdepth
@@ -45,50 +51,17 @@ function redrawGroup1() {
     drawQuiver(requestDataInfo);
 }
 
-function changeDate(date) {
-    curdate = date;
-    redrawGroup1();
-}
-
 $("input.depthoption").change(function () {
     curdepth = this.value;
-    redrawGroup1();
-})
+    if($("input[type=checkbox][value=eddy]").is(':checked')){
+        changeDateEddy();
+    }
+    else{
+        redrawGroup1();
+    }
+});
 
 var sliderwidth = $(".attr-selector").width() * 0.9;
-$('#ow-slider').jRange({
-    from: 0.1,
-    to: 1.0,
-    step: 0.1,
-    scale: [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0],
-    format: '%s',
-    theme: "theme-blue",
-    width: sliderwidth,
-    showLabels: true,
-    snap: true,
-    ondragend: function (value) {
-        console.log('ow coef: ' + value);
-        changeOWcoeff(value);
-    }
-});
-$('#ow-slider').jRange('disable');
-
-
-$('#sla-slider').jRange({
-    from: 0,
-    to: 10,
-    step: 1,
-    scale: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-    format: '%s',
-    width: sliderwidth,
-    theme: "theme-blue",
-    showLabels: true,
-    snap: true,
-    ondragend: function (value){
-        console.log('sla threshold: ' + value);
-        changeSLAthresold(value);
-    }
-});
 
 $('#ssh-slider').jRange({
     from: 40,
@@ -99,115 +72,89 @@ $('#ssh-slider').jRange({
     theme: "theme-blue",
     width: sliderwidth,
     showLabels: true,
-    snap: true
-    // ondragend: function (value){
-    //     console.log('ssh scale: ' + value);
-    //     changeSSHextScale(value);
-    // }
-});
-
-$('input.attroption,input.attroption-special').change(function () {
-    // 这个option的值肯定不会是ow或sla，因此不需要合理性判断
-    if (this.value == 'ow') {
-        $('#ow-slider').jRange('enable');
-    }
-    else {
-        $('#ow-slider').jRange('disable');
+    snap: true,
+    ondragend: function (value){
+        changeSSHextScale(value);
     }
 });
 
 $("#reset-brush1").css("visibility", "hidden");
 
+
+// 双y轴所指示的属性发生变化
 $("select.y1-picker").change(function () {
     y2attr1 = this.value;
     redrawLineCharts();
     print2yScatter();
 });
-
 $("select.y2-picker").change(function () {
     y2attr2 = this.value;
     redrawLineCharts();
     print2yScatter();
-})
+});
 
+// 设置需要播放的时间
+$("input.date-space-option").change(function () {
+    setCarouselItem();
+});
 
-
-/*
-svgSelector = d3.select(".one-graph svg") // 实际上指选择了第一个
-var twoRequestDataInfo = {
-    "resulation": '0p2',
-    "file1":{
-        "attr": 'temp',
-        "time": "2001-06-16",
-        "depth": "5.01m"
-    },
-    "file2":{
-        "attr": 'v',
-        "time": "2001-06-16",
-        "depth": "5.01m"
+// 停止和播放按钮
+$("button.play-stop-btn").click(function () {
+    var span = $(this).children('span');
+    if (span.hasClass('glyphicon-play')) {
+        span.attr("class", "glyphicon glyphicon-pause");
+        $(this).attr("class", "play-stop-btn btn btn-danger");
+        // 开始自动播放，不再绘图，不允许滑条
+        isAutoPlay = true;
+        dateIns.reload({
+            autoplay: isAutoPlay
+        });
+        $("input.attroption, input.attoption-special").attr("disabled", "disabled").parent().css('color', 'grey');
+        $("input#date-pick").attr("disabled", "disabled").css('color', 'grey');
+        $("input.depthoption").attr("disabled", "disabled").parent().css('color', 'grey');
+        $('#ssh-slider').jRange('disable');
+        $('input.date-space-option').attr("disabled", "disabled").parent().css('color', 'grey');
     }
-};
-drawScatter(svgSelector, twoRequestDataInfo, 'red');
+    else {
+        span.attr("class", "glyphicon glyphicon-play");
+        $(this).attr("class", "play-stop-btn btn btn-success");
+        // 停止自动播放，开始绘图，开放滑条
+        isAutoPlay = false;
+        dateIns.reload({
+            autoplay: isAutoPlay
+        });
+        $("input.attroption, input.attoption-special").removeAttr("disabled", "disabled").parent().css('color', '');
+        $("input#date-pick").removeAttr("disabled").css('color', 'grey');
+        $("input.depthoption").removeAttr("disabled").parent().css('color', '');
+        $('#ssh-slider').jRange('enable');
+        $('input.date-space-option').removeAttr('disabled').parent().css('color', '');
+        UpDateRedrawScaAndPara();
+    }
+});
 
-var attrsRequest = {
-    "resulation": "0p2",
-    "time": "2001-01-16",
-    "depth": "5.01m",
-    "attrs": ["ssh","salt","temp","u","v"] // 注意可以控制顺序 //返回最多6个
-};
-svgSelector = d3.select("#parallel-coordinate svg");
-drawParaller(svgSelector, attrsRequest);
-*/
-
-/* 用svg画时间轴，目前弃用，等待最后确认弃用后删除
-var svg = d3.select("#depthselector svg");
-var width = $("#depthselector svg").width(); // svg.style("width")得到是px单位的字符串，attr得到是100%字符串
-var height = $("#depthselector svg").height();
-var depth = 150;
-var depthList = [5.05, 10.34, 30.1, 57, 78, 101];
-var padding = {
-    top: 30,
-    right: 5
-};
-var innerTickSize = 4;
-var scale = d3.scale.linear()
-    .domain([0, depth])
-    .range([0, height - padding.top * 2]);
-var axisLeft = d3.svg.axis()
-    .scale(scale)
-    .orient("left")
-    .tickValues(depthList)
-    .innerTickSize(innerTickSize)
-    .outerTickSize(0);
-var gAxis = svg.append("g").attr("class", "axis").attr("transform",
-    "translate(" + (width - 1) + "," + padding.top + ")"); //记得加括号，不然先进行字符串拼接后减就是NaN了
-axisLeft(gAxis);
-var circle = svg.selectAll("circle").data(depthList).enter()
-    .append('circle')
-    .attr('cx', width - 1)
-    .attr('cy', function (d) {
-        return padding.top + scale(d);
-    })
-    .attr('r', innerTickSize);
-
-// svg = d3.select("#dateselector svg");
-// width = $("#dateselector svg").width();
-// height = $("#dateselector svg").height();
-// padding.top = 10;
-// scale.domain([0,13]).range([0, height - padding.top * 2]); // 多出来是为了延长
-// monthList = d3.range(1,13) // 12个月
-// var axisRight = d3.svg.axis()
-//     .scale(scale)
-//     .orient("right")
-//     .tickValues(monthList)
-//     .innerTickSize(innerTickSize)
-//     .outerTickSize(0);
-
-// gAxis = svg.append("g").attr("class", "axis").attr("transform", "translate("+ 1 + "," + padding.top + ")");
-// axisRight(gAxis);
-// circle = svg.selectAll("circle").data(monthList).enter()
-//     .append('circle')
-//     .attr('cx', 1)
-//     .attr('cy', function(d){return padding.top+scale(d);})
-//     .attr('r', innerTickSize);
-*/
+// 初始禁用eddy模块
+$("div.eddy-block input.date-space-option").attr("disabled", "disabled");
+$("div.eddy-block button").attr("disabled", "disabled");
+$('#ssh-slider').jRange('disable');
+$('.eddy-block').children('*').css('color', 'grey');
+// 开启/关闭涡旋模块
+$("input[type=checkbox][value=eddy]").change(function () {
+    if ($(this).is(':checked')) {
+        // $("div.eddy-block").children("*").removeAttr("disabled");
+        $("div.eddy-block input.date-space-option").removeAttr("disabled");
+        $("div.eddy-block button").removeAttr("disabled");
+        $('#ssh-slider').jRange('enable');
+        $('.eddy-block').children('*').css('color', '');
+        setCarouselItem();
+        // $("input[type=checkbox][value=quiver]").prop('checked', true).attr("disabled", "disabled").css('color', 'grey');
+        eddyBoundaryChart.selectAll('rect.eddyhm, path.eddy-line').style("visibility", "visible");
+    } else {
+        // $("div.eddy-block").children("*").attr("disabled", "disabled");        
+        $("div.eddy-block input.date-space-option").attr("disabled", "disabled");
+        $("div.eddy-block button").attr("disabled", "disabled");
+        $('#ssh-slider').jRange('disable');
+        $('.eddy-block').children('*').css('color', 'grey');
+        // $("input[type=checkbox][value=quiver]").removeAttr("disabled").css('color', '');
+        eddyBoundaryChart.selectAll('rect.eddyhm, path.eddy-line').style("visibility", "hidden");
+    }
+});
