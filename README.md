@@ -3,6 +3,8 @@
 2018 OUC本科毕业设计
 
 > release-branch删除了几乎所有无用的代码和注释。若需要开发请切换其他分支，主分支为develop分支
+>
+> 当时答辩用的演示视频已经上传到[bilibili](https://www.bilibili.com/video/BV1Ep4y1176z/)，没有讲解的声音。
 
 ## 使用
 
