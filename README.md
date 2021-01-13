@@ -18,6 +18,7 @@
 1. 数据文件在百度盘，过段时间整理完后再分享。
     + 咨询的人有点多的，在此说明一下，数据仍有备份，但是量多而且有部分文件太大了，超过了百度盘非会员的上传限制，所以搁置到至今
     + 先提供部分的，不全，也不是最终数据：链接: https://pan.baidu.com/s/1g92muz_aGwbJz4YjLJT_5w  密码: rak8
+    + 目前在浏览器收藏夹里找到两个和数据集下载有关的链接，但具体是网页里的哪个链接确实是记不起来了：[hycom](http://tds.hycom.org/thredds/catalog.html)和[IRI/LDEO](http://iridl.ldeo.columbia.edu/SOURCES/.CARTON-GIESE/.SODA/.v2p2p4/)
     + 本科毕业后不再从事这方面的工作和研究了，因此没有动力去精简一个能直接用的demo数据，待硕士毕业后有机会整理
     + 之后可能会选择付费/实体存储介质等形式提供数据
 2. 数据文件夹名为oceandata，下载解压后放到项目根目录，即和```hello.py```在同一个目录下。
