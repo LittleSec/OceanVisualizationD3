@@ -110,6 +110,8 @@ def get_data_bylonlat():
                 dict1 = {}
                 df1 = pd.read_csv('/'.join([absPath, file])).drop(columns=['ow'])
                 qdf = df1.query(queryExpr).drop(columns=['lon', 'lat'])
+                if qdf.empty:
+                    continue
                 dict1 = qdf.to_dict('record')
                 dict1[0]['date'] = file[:-4]
                 dict1[0]['depth'] = depth
